@@ -114,6 +114,8 @@
             :type="type"
             :beverages="beverages"
             :stats="beverageStats[type] || {}"
+            :hide-glass-info="type === 'Cocktails'"
+            :show-format-info="!['Cocktails', 'Hard Seltzer'].includes(type)"
           />
         </div>
       </div>

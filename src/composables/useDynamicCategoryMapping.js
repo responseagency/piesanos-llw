@@ -46,6 +46,9 @@ export function useDynamicCategoryMapping(beverages) {
     // Cider categories
     'recc31M7zmpwDWWhX': 'Hard Cider',
 
+    // Hard Seltzer categories
+    'rectT4swjelSD6IXu': 'Hard Seltzer',
+
     // Cocktail categories
     'recaYJ43r97bZw8Z2': 'Cocktail',
     'recmfO8mrt0LPRIqj': 'Martini',
@@ -128,8 +131,13 @@ export function useDynamicCategoryMapping(beverages) {
 
     const name = beverageName.toLowerCase()
 
+    // Safely handle beverageType - could be string, array, or null
+    const typeString = beverageType
+      ? (Array.isArray(beverageType) ? beverageType[0] : String(beverageType)).toLowerCase()
+      : ''
+
     // Check wine patterns
-    if (beverageType?.toLowerCase().includes('wine') || name.includes('wine')) {
+    if (typeString.includes('wine') || name.includes('wine')) {
       for (const { pattern, name: categoryName } of WINE_PATTERNS) {
         if (pattern.test(name)) {
           return categoryName
@@ -138,7 +146,7 @@ export function useDynamicCategoryMapping(beverages) {
     }
 
     // Check beer patterns
-    if (beverageType?.toLowerCase().includes('beer') ||
+    if (typeString.includes('beer') ||
         name.includes('beer') || name.includes('ale') || name.includes('lager') ||
         name.includes('ipa') || name.includes('stout') || name.includes('porter')) {
       for (const { pattern, name: categoryName } of BEER_PATTERNS) {
@@ -149,7 +157,7 @@ export function useDynamicCategoryMapping(beverages) {
     }
 
     // Check cocktail patterns
-    if (beverageType?.toLowerCase().includes('cocktail') ||
+    if (typeString.includes('cocktail') ||
         name.includes('cocktail') || name.includes('martini') || name.includes('margarita')) {
       for (const { pattern, name: categoryName } of COCKTAIL_PATTERNS) {
         if (pattern.test(name)) {

@@ -33,10 +33,10 @@
         </div>
 
         <div class="text-xs text-gray-600 space-y-1">
-          <div v-if="beverage.fields['Beverage Format']">
+          <div v-if="showFormatInfo && !hideFormatInfo && beverage.fields['Beverage Format']">
             <span class="font-medium">Format:</span> {{ getFormat(beverage) }}
           </div>
-          <div v-if="beverage.fields['Selected Size']">
+          <div v-if="showFormatInfo && !hideFormatInfo && beverage.fields['Selected Size']">
             <span class="font-medium">Size:</span> {{ getSize(beverage) }}
           </div>
           <div v-if="beverage.fields['ABV (from Beverage Item)']">
@@ -47,14 +47,6 @@
           </div>
         </div>
 
-        <div class="mt-2">
-          <span
-            :class="getValidityClass(beverage)"
-            class="inline-block px-2 py-1 text-xs rounded-full"
-          >
-            {{ beverage.fields['Is valid size?'] || 'Unknown' }}
-          </span>
-        </div>
       </div>
     </div>
   </div>
@@ -90,13 +82,96 @@ export default {
     isSubcategory: {
       type: Boolean,
       default: false
+    },
+    hideGlassInfo: {
+      type: Boolean,
+      default: false
+    },
+    hideFormatInfo: {
+      type: Boolean,
+      default: false
+    },
+    showFormatInfo: {
+      type: Boolean,
+      default: true
+    },
+    hideFormatKeywords: {
+      type: Boolean,
+      default: false
+    },
+    useCleanNames: {
+      type: Boolean,
+      default: false
     }
   },
   methods: {
     getBeverageName(beverage) {
-      const name = beverage.fields.Name || 'Unnamed Beverage'
+      if (this.useCleanNames) {
+        return this.buildCleanName(beverage)
+      }
+
+      let name = beverage.fields.Name || 'Unnamed Beverage'
+
       // Remove price from name if it's there
-      return name.replace(/\s*:\s*\$[\d.]+$/, '')
+      name = name.replace(/\s*:\s*\$[\d.]+$/, '')
+
+      // Remove glass/container information if hideGlassInfo is enabled
+      if (this.hideGlassInfo) {
+        name = name.replace(/\s*-\s*(Martini Glass|Cocktail Glass|Glass)\s*$/, '')
+      }
+
+      return name
+    },
+
+    buildCleanName(beverage) {
+      const producer = beverage.fields['Producer (from Beverage Item)']
+      const beverageItemName = this.getBeverageItemName(beverage)
+      const volume = beverage.fields['Volume']
+
+      // Build name: Producer BeverageItemName - Volume oz
+      let cleanName = ''
+
+      if (producer && producer.length > 0) {
+        cleanName += producer[0]
+      }
+
+      if (beverageItemName) {
+        if (cleanName) cleanName += ' '
+        cleanName += beverageItemName
+      }
+
+      // Add volume if available
+      if (volume && volume.length > 0) {
+        cleanName += ` - ${volume[0]} oz`
+      }
+
+      return cleanName || 'Unnamed Beverage'
+    },
+
+    getBeverageItemName(beverage) {
+      // Since we don't have direct access to the beverage item name from lookup fields,
+      // we'll extract the core beverage name by removing known format patterns
+      const name = beverage.fields.Name || ''
+
+      // Remove price first: " : $8"
+      let cleanName = name.replace(/\s*:\s*\$[\d.]+$/, '')
+
+      // Remove format patterns: " - Draught 16 oz Glass", " - Bottle 12 oz Can", etc.
+      cleanName = cleanName.replace(/\s*-\s*(Draught|Bottle|Can)\s+\d+(?:\.\d+)?\s*oz\s+(Glass|Can|Bottle|Mini Bottle)/i, '')
+
+      // If we have a producer, try to remove it from the beginning
+      const producer = beverage.fields['Producer (from Beverage Item)']
+      if (producer && producer.length > 0) {
+        const producerName = producer[0]
+        // Remove producer from beginning if it exists
+        cleanName = cleanName.replace(new RegExp(`^${this.escapeRegex(producerName)}\\s*`, 'i'), '')
+      }
+
+      return cleanName.trim() || 'Unknown Beverage'
+    },
+
+    escapeRegex(string) {
+      return string.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')
     },
 
     getFormat(beverage) {
@@ -119,15 +194,6 @@ export default {
       return producer ? producer[0] : 'Unknown'
     },
 
-    getValidityClass(beverage) {
-      const validity = beverage.fields['Is valid size?']
-      if (validity === '✅ Valid') {
-        return 'bg-green-100 text-green-800'
-      } else if (validity?.includes('❗')) {
-        return 'bg-yellow-100 text-yellow-800'
-      }
-      return 'bg-gray-100 text-gray-800'
-    },
 
     getBeverageCategory(beverage) {
       const categories = beverage.fields['Beverage Categories (from Beverage Item)']
@@ -141,8 +207,8 @@ export default {
         categoryName = getBeverageCategoryName(categories[0])
       }
 
-      // Hide category for cocktails since it's redundant
-      if (categoryName === 'Cocktail' || categoryName === 'Martini') {
+      // Hide category for cocktails and hard seltzers since it's redundant
+      if (categoryName === 'Cocktail' || categoryName === 'Martini' || categoryName === 'Hard Seltzer') {
         return null
       }
 

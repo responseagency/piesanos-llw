@@ -51,6 +51,9 @@ const BEVERAGE_CATEGORY_MAP = {
   // Cider categories
   'recc31M7zmpwDWWhX': 'Hard Cider',
 
+  // Hard Seltzer categories
+  'rectT4swjelSD6IXu': 'Hard Seltzer',
+
   // Cocktail categories
   'recaYJ43r97bZw8Z2': 'Cocktail',
   'recmfO8mrt0LPRIqj': 'Martini',
@@ -249,19 +252,23 @@ function extractWineBaseName(fullName, beverageCategories) {
   return `${baseName}__${categoryKey}`
 }
 
-// Parse serving size and format from wine name
-function parseWineServing(fullName) {
-  // Extract format, size, and price
-  const formatMatch = fullName.match(/Wine\s+(Glass|Bottle)/)
-  const sizeMatch = fullName.match(/(\d+(?:\.\d+)?)\s*oz/)
-  const containerMatch = fullName.match(/oz\s+(Glass|Bottle|Mini Bottle)/)
-  const priceMatch = fullName.match(/\$(\d+(?:\.\d+)?)/)
+// Parse serving size and format from wine fields
+function parseWineServing(wine) {
+  // Map format IDs to readable names
+  const formatMap = {
+    'recDlaYGEmS23x6gB': 'Glass',
+    'recJOuYK67z0S23Gg': 'Bottle'
+  }
+
+  const formatId = wine.fields['Beverage Format']
+  const volume = wine.fields['Volume']
+  const price = wine.fields['Price']
 
   return {
-    format: formatMatch ? formatMatch[1] : 'Unknown',
-    size: sizeMatch ? parseFloat(sizeMatch[1]) : 0,
-    container: containerMatch ? containerMatch[1] : 'Unknown',
-    price: priceMatch ? parseFloat(priceMatch[1]) : 0
+    format: formatId && formatId.length > 0 ? formatMap[formatId[0]] || 'Unknown' : 'Unknown',
+    size: volume && volume.length > 0 ? volume[0] : 0,
+    container: formatId && formatId.length > 0 ? formatMap[formatId[0]] || 'Unknown' : 'Unknown',
+    price: price || 0
   }
 }
 
@@ -272,7 +279,7 @@ export function groupWinesByBaseName(wines) {
   wines.forEach(wine => {
     const beverageCategories = wine.fields['Beverage Categories (from Beverage Item)'] || []
     const groupingKey = extractWineBaseName(wine.fields.Name || '', beverageCategories)
-    const serving = parseWineServing(wine.fields.Name || '')
+    const serving = parseWineServing(wine)
 
     // Extract display name (without category suffix for UI)
     const displayName = (wine.fields.Name || '').match(/^(.+?)\s*-\s*Wine/)

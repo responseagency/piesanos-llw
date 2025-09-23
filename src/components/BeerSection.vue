@@ -20,6 +20,8 @@
         :beverages="beverages"
         :stats="stats[subcategory] || {}"
         :is-subcategory="true"
+        :show-format-info="false"
+        :use-clean-names="true"
       />
     </div>
   </div>
