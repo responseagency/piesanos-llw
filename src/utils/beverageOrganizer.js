@@ -240,6 +240,55 @@ export function filterAvailableBeverages(groupedBeverages) {
   return filtered
 }
 
+// Filter beverages by location availability
+export function filterBeveragesByLocation(groupedBeverages, selectedLocationId) {
+  if (!selectedLocationId) return groupedBeverages
+
+  const filtered = {}
+
+  Object.keys(groupedBeverages).forEach(type => {
+    filtered[type] = groupedBeverages[type].filter(beverage => {
+      const unavailableLocations = beverage.fields['Unavailable Locations'] || []
+      // Filter out beverages that have the selected location in their "unavailable locations" field
+      return !unavailableLocations.includes(selectedLocationId)
+    })
+  })
+
+  return filtered
+}
+
+// Combined filter function for both availability and location
+export function filterBeverages(groupedBeverages, options = {}) {
+  const {
+    showOnlyAvailable = false,
+    selectedLocationId = null,
+    customFilter = null
+  } = options
+
+  let filtered = { ...groupedBeverages }
+
+  // Apply location filter first
+  if (selectedLocationId) {
+    filtered = filterBeveragesByLocation(filtered, selectedLocationId)
+  }
+
+  // Apply availability filter
+  if (showOnlyAvailable) {
+    filtered = filterAvailableBeverages(filtered)
+  }
+
+  // Apply custom filter if provided
+  if (customFilter && typeof customFilter === 'function') {
+    const customFiltered = {}
+    Object.keys(filtered).forEach(type => {
+      customFiltered[type] = filtered[type].filter(customFilter)
+    })
+    filtered = customFiltered
+  }
+
+  return filtered
+}
+
 // Extract base wine name from full name, including varietal info
 function extractWineBaseName(fullName, beverageCategories) {
   // Pattern: "Brand Name - Wine [Format] [Size] [Container] : $Price"

@@ -3,10 +3,24 @@
     <!-- Header -->
     <div class="bg-white shadow-sm border-b">
       <div class="max-w-7xl mx-auto px-4 py-4">
-        <div class="flex items-center justify-between">
+        <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
           <h1 class="text-3xl font-bold text-gray-900">Beverage Menu</h1>
-          <div class="text-sm text-gray-600">
-            Last updated: {{ lastUpdated || 'Never' }}
+
+          <!-- Location Selector -->
+          <div class="flex flex-col sm:flex-row sm:items-center gap-4">
+            <LocationSelector
+              :selected-location-id="selectedLocationId"
+              :locations="locations"
+              :loading="locationLoading"
+              :error="locationError"
+              :show-label="true"
+              size="medium"
+              @location-changed="handleLocationChange"
+            />
+
+            <div class="text-sm text-gray-600 whitespace-nowrap">
+              Last updated: {{ lastUpdated || 'Never' }}
+            </div>
           </div>
         </div>
       </div>
@@ -130,14 +144,16 @@
 <script>
 import { ref, computed, onMounted, provide } from 'vue'
 import { useAirtable } from './composables/useAirtable'
+import { useLocationFilter } from './composables/useLocationFilter'
 import { useDynamicCategoryMapping } from './composables/useDynamicCategoryMapping'
 import BeverageSection from './components/BeverageSection.vue'
 import WineSection from './components/WineSection.vue'
 import BeerSection from './components/BeerSection.vue'
+import LocationSelector from './components/LocationSelector.vue'
 import {
   groupBeveragesByType,
   sortBeveragesByPrice,
-  filterAvailableBeverages,
+  filterBeverages,
   getBeverageStats
 } from './utils/beverageOrganizer'
 
@@ -146,20 +162,39 @@ export default {
   components: {
     BeverageSection,
     WineSection,
-    BeerSection
+    BeerSection,
+    LocationSelector
   },
   setup() {
     const { data, loading, error, fetchData } = useAirtable()
+    const {
+      locations,
+      selectedLocationId,
+      selectedLocation,
+      selectedLocationName,
+      activeLocations,
+      loading: locationLoading,
+      error: locationError,
+      fetchLocations,
+      setSelectedLocation
+    } = useLocationFilter()
     const { getCategoryName, dynamicCategoryMapping, mappingStats } = useDynamicCategoryMapping(data)
     const lastUpdated = ref(null)
     const showOnlyAvailable = ref(false)
     const sortBy = ref('name')
 
-    // Provide the dynamic category mapping to child components
+    // Provide the dynamic category mapping and location filter to child components
     provide('categoryMapping', {
       getCategoryName,
       dynamicMapping: dynamicCategoryMapping,
       stats: mappingStats
+    })
+
+    provide('locationFilter', {
+      setSelectedLocation,
+      selectedLocationId,
+      selectedLocation,
+      selectedLocationName
     })
 
     const organizedBeverages = computed(() => {
@@ -173,12 +208,13 @@ export default {
     })
 
     const displayedBeverages = computed(() => {
-      let beverages = { ...organizedBeverages.value }
+      if (!organizedBeverages.value) return {}
 
-      // Filter by availability if requested
-      if (showOnlyAvailable.value) {
-        beverages = filterAvailableBeverages(beverages)
-      }
+      // Apply combined filtering (location + availability + custom filters)
+      let beverages = filterBeverages(organizedBeverages.value, {
+        showOnlyAvailable: showOnlyAvailable.value,
+        selectedLocationId: selectedLocationId.value
+      })
 
       // Sort beverages within each type
       if (sortBy.value.startsWith('price')) {
@@ -235,9 +271,19 @@ export default {
       return result
     })
 
+    // Handle location change from component
+    const handleLocationChange = (newLocationId) => {
+      setSelectedLocation(newLocationId)
+    }
+
     const loadData = async () => {
-      await fetchData()
-      if (!error.value) {
+      // Load both beverage and location data
+      await Promise.all([
+        fetchData(),
+        fetchLocations()
+      ])
+
+      if (!error.value && !locationError.value) {
         lastUpdated.value = new Date().toLocaleString()
       }
     }
@@ -247,6 +293,7 @@ export default {
     })
 
     return {
+      // Beverage data
       data,
       loading,
       error,
@@ -258,7 +305,22 @@ export default {
       beerSubcategories,
       otherBeverages,
       showOnlyAvailable,
-      sortBy
+      sortBy,
+
+      // Location data
+      locations,
+      selectedLocationId,
+      selectedLocation,
+      selectedLocationName,
+      activeLocations,
+      locationLoading,
+      locationError,
+
+      // Event handlers
+      handleLocationChange,
+
+      // Computed stats
+      mappingStats
     }
   }
 }
