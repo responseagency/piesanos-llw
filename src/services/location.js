@@ -31,7 +31,7 @@ class LocationService {
 
   // Helper methods for working with location data
   formatLocationName(location) {
-    return location.fields?.Name || 'Unknown Location'
+    return location.fields?.['Location Name']?.trim() || 'Unknown Location'
   }
 
   getLocationSlug(location) {
