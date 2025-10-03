@@ -2,6 +2,24 @@
 
 A Vue.js 3 application for displaying restaurant beverage menus with intelligent categorization and dynamic data integration from Airtable.
 
+## Location URLs
+
+- **Bradenton**: https://drinks.piesanostogo.com/?location=bradenton
+- **Clermont**: https://drinks.piesanostogo.com/?location=clermont
+- **East Orlando - Town Park**: https://drinks.piesanostogo.com/?location=east-orlando-town-park
+- **Gainesville - Millhopper Rd**: https://drinks.piesanostogo.com/?location=gainesville-millhopper-rd
+- **Gainesville - Tower Rd**: https://drinks.piesanostogo.com/?location=gainesville-tower-rd
+- **Gainesville - University Ave**: https://drinks.piesanostogo.com/?location=gainesville-university-ave
+- **Lake City**: https://drinks.piesanostogo.com/?location=lake-city
+- **Ocala - Canopy Oaks OTOW**: https://drinks.piesanostogo.com/?location=ocala-canopy-oaks-otow
+- **Ocala - Grand Oaks by Trinity**: https://drinks.piesanostogo.com/?location=ocala-grand-oaks-by-trinity
+- **St Augustine - Cobble Stone Village**: https://drinks.piesanostogo.com/?location=st-augustine-cobble-stone-village
+- **Tallahasse**: https://drinks.piesanostogo.com/?location=tallahasse
+- **The Villages - Lake Deaton**: https://drinks.piesanostogo.com/?location=the-villages-lake-deaton
+- **The Villages - Southern Trace**: https://drinks.piesanostogo.com/?location=the-villages-southern-trace
+- **Viera**: https://drinks.piesanostogo.com/?location=viera
+- **Windemere**: https://drinks.piesanostogo.com/?location=windemere
+
 ## Features
 
 ### 🍷 Smart Wine Grouping
