@@ -1,13 +1,14 @@
 import { createRouter, createWebHistory, createMemoryHistory } from 'vue-router'
 import locationService from './services/location.js'
 import locationsCache from './data/locations-cache.json'
+import App from './App.vue'
 
 // Get all active locations for route generation
 const locations = (locationsCache.data || []).filter(loc =>
   locationService.isLocationActive(loc)
 )
 
-// Generate routes for all locations
+// Generate routes for all locations - each uses App.vue as component
 const locationRoutes = locations.map(location => {
   const slug = locationService.getLocationSlug(location)
   const name = locationService.formatLocationName(location)
@@ -15,7 +16,7 @@ const locationRoutes = locations.map(location => {
   return {
     path: `/${slug}`,
     name: slug,
-    component: () => import('./App.vue'),
+    component: App,  // Use App component directly (not dynamic import)
     meta: {
       locationSlug: slug,
       locationId: location.id,
@@ -24,12 +25,12 @@ const locationRoutes = locations.map(location => {
   }
 })
 
-// Define all routes
+// Define all routes - each uses App.vue as component
 export const routes = [
   {
     path: '/',
     name: 'home',
-    component: () => import('./App.vue'),
+    component: App,  // Use App component directly (not dynamic import)
     meta: {
       locationSlug: null,
       locationId: null,

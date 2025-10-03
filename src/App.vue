@@ -278,6 +278,7 @@ import { ref, computed, onMounted, provide } from 'vue'
 import { useAirtable } from './composables/useAirtable'
 import { useLocationFilter } from './composables/useLocationFilter.router'
 import { useDynamicCategoryMapping } from './composables/useDynamicCategoryMapping'
+import { useLookupMappings } from './composables/useLookupMappings'
 import { useUrlParams } from './composables/useUrlParams'
 import BeverageSection from './components/BeverageSection.vue'
 import WineSection from './components/WineSection.vue'
@@ -328,6 +329,15 @@ export default {
       setSelectedLocation
     } = useLocationFilter()
     const { getCategoryName, dynamicCategoryMapping, mappingStats } = useDynamicCategoryMapping(data)
+    const {
+      mappings: lookupMappings,
+      isLoading: lookupLoading,
+      fetchMappings,
+      getCategoryName: getLookupCategoryName,
+      getTypeName: getLookupTypeName,
+      getFormatName: getLookupFormatName,
+      getSizeName: getLookupSizeName
+    } = useLookupMappings()
     const { isDebugMode } = useUrlParams()
     const lastUpdated = ref(null)
     const showOnlyAvailable = ref(false)
@@ -337,6 +347,81 @@ export default {
     const isRefreshing = ref(false)
     const refreshMessage = ref('')
     const refreshError = ref(false)
+
+    // Enhanced beverage data with resolved lookup fields
+    const enhancedBeverageData = computed(() => {
+      if (!data.value || lookupLoading.value) return null
+
+      console.log('🔧 Enhancing beverage data with lookup mappings...')
+      console.log('  - Lookup mappings available:', {
+        types: Object.keys(lookupMappings.value.types || {}).length,
+        categories: Object.keys(lookupMappings.value.categories || {}).length,
+        formats: Object.keys(lookupMappings.value.formats || {}).length
+      })
+
+      const enhanced = data.value.map((beverage, index) => {
+        // Clone the beverage to avoid mutating original data
+        const result = { ...beverage, fields: { ...beverage.fields } }
+
+        // Resolve Beverage Type (array of IDs -> array of names)
+        const typeIds = beverage.fields['Beverage Type']
+        if (typeIds && Array.isArray(typeIds)) {
+          result.fields['Beverage Type Resolved'] = typeIds
+            .map(id => getLookupTypeName(id))
+            .filter(name => name !== null)
+
+          // Debug first beverage
+          if (index === 0) {
+            console.log('  - Sample beverage type resolution:')
+            console.log('    Raw IDs:', typeIds)
+            console.log('    Resolved:', result.fields['Beverage Type Resolved'])
+          }
+        }
+
+        // Resolve Beverage Categories (array of IDs -> array of names)
+        const categoryIds = beverage.fields['Beverage Categories (from Beverage Item)']
+        if (categoryIds && Array.isArray(categoryIds)) {
+          result.fields['Beverage Categories Resolved'] = categoryIds
+            .map(id => getLookupCategoryName(id))
+            .filter(name => name !== null)
+
+          // Debug first beverage
+          if (index === 0) {
+            console.log('  - Sample beverage category resolution:')
+            console.log('    Raw IDs:', categoryIds)
+            console.log('    Resolved:', result.fields['Beverage Categories Resolved'])
+          }
+        }
+
+        // Resolve Beverage Format (array of IDs -> array of names)
+        const formatIds = beverage.fields['Beverage Format']
+        if (formatIds && Array.isArray(formatIds)) {
+          result.fields['Beverage Format Resolved'] = formatIds
+            .map(id => getLookupFormatName(id))
+            .filter(name => name !== null)
+
+          // Debug first beverage
+          if (index === 0) {
+            console.log('  - Sample beverage format resolution:')
+            console.log('    Raw IDs:', formatIds)
+            console.log('    Resolved:', result.fields['Beverage Format Resolved'])
+          }
+        }
+
+        // Resolve Beverage Size (array of IDs -> array of names)
+        const sizeIds = beverage.fields['Beverage Size']
+        if (sizeIds && Array.isArray(sizeIds)) {
+          result.fields['Beverage Size Resolved'] = sizeIds
+            .map(id => getLookupSizeName(id))
+            .filter(name => name !== null)
+        }
+
+        return result
+      })
+
+      console.log(`✅ Enhanced ${enhanced.length} beverages with resolved lookup fields`)
+      return enhanced
+    })
 
     // Provide the dynamic category mapping and location filter to child components
     provide('categoryMapping', {
@@ -353,8 +438,8 @@ export default {
     })
 
     const organizedBeverages = computed(() => {
-      if (!data.value) return {}
-      return groupBeveragesByType(data.value)
+      if (!enhancedBeverageData.value) return {}
+      return groupBeveragesByType(enhancedBeverageData.value)
     })
 
     const beverageStats = computed(() => {
@@ -434,13 +519,13 @@ export default {
 
     // NEW: Hierarchical beverage organization
     const hierarchicalBeverages = computed(() => {
-      console.log('[App] hierarchicalBeverages computed - data.value:', !!data.value, 'count:', data.value?.length)
+      console.log('[App] hierarchicalBeverages computed - enhancedBeverageData:', !!enhancedBeverageData.value, 'count:', enhancedBeverageData.value?.length)
       console.log('[App] selectedLocationNumber:', selectedLocationNumber.value)
       console.log('[App] selectedLocation:', selectedLocation.value?.fields?.['Location Name'])
-      if (!data.value) return {}
+      if (!enhancedBeverageData.value) return {}
 
       // First organize beverages into hierarchical structure with location awareness
-      let organized = organizeByHierarchy(data.value, selectedLocationNumber.value)
+      let organized = organizeByHierarchy(enhancedBeverageData.value, selectedLocationNumber.value)
 
       // Apply filtering based on current settings
       organized = filterHierarchy(organized, {
@@ -473,11 +558,15 @@ export default {
       // Only load data if not already loaded from SSR/SSG
       const needsBeverageData = !data.value || data.value.length === 0
       const needsLocationData = !locations.value || locations.value.length === 0
+      const needsLookupData = !lookupMappings.value ||
+        (Object.keys(lookupMappings.value.types || {}).length === 0 &&
+         Object.keys(lookupMappings.value.categories || {}).length === 0)
 
-      if (needsBeverageData || needsLocationData) {
+      if (needsBeverageData || needsLocationData || needsLookupData) {
         const promises = []
         if (needsBeverageData) promises.push(fetchData())
         if (needsLocationData) promises.push(fetchLocations())
+        if (needsLookupData) promises.push(fetchMappings())
 
         await Promise.all(promises)
       }

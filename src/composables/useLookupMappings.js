@@ -1,16 +1,41 @@
-import { ref, computed } from 'vue'
+import { ref, computed, inject } from 'vue'
 
 /**
  * Composable for fetching and managing lookup mappings from the server
  * Provides category, type, format, and size mappings from Airtable
  */
 export function useLookupMappings() {
-  const mappings = ref({
+  // Fallback mappings for formats and sizes (not accessible via API)
+  const FALLBACK_FORMAT_MAPPINGS = {
+    'recDlaYGEmS23x6gB': 'Draught',
+    'recJOuYK67z0S23Gg': 'Bottle',
+    'reckfsdGMlPPVFr4B': 'Draught',  // Cider draught format
+    'recW9YJwXQBGdVx6b': 'Can'
+  }
+
+  const FALLBACK_SIZE_MAPPINGS = {
+    // Add size mappings as needed
+  }
+
+  // Try to get initial state from Vue provide/inject
+  const initialState = inject('initialState', null)
+
+  // Initialize mappings from SSG/SSR initialState if available
+  const initialMappings = (import.meta.env.SSR && initialState?.lookupMappings) ||
+    (typeof window !== 'undefined' && window.__INITIAL_STATE__?.lookupMappings) ||
+    null
+
+  const mappings = ref(initialMappings || {
     categories: {},
     types: {},
-    formats: {},
-    sizes: {}
+    formats: FALLBACK_FORMAT_MAPPINGS,
+    sizes: FALLBACK_SIZE_MAPPINGS
   })
+
+  if (initialMappings) {
+    console.log('[useLookupMappings] Using pre-built mappings from initialState')
+  }
+
   const isLoading = ref(false)
   const error = ref(null)
 
@@ -33,8 +58,14 @@ export function useLookupMappings() {
       const data = await response.json()
 
       if (data.success && data.data) {
-        mappings.value = data.data
-        console.log('Loaded lookup mappings:', data.data)
+        // Merge fetched mappings with fallback format/size mappings
+        mappings.value = {
+          categories: data.data.categories || {},
+          types: data.data.types || {},
+          formats: { ...FALLBACK_FORMAT_MAPPINGS, ...(data.data.formats || {}) },
+          sizes: { ...FALLBACK_SIZE_MAPPINGS, ...(data.data.sizes || {}) }
+        }
+        console.log('Loaded lookup mappings:', mappings.value)
       } else {
         throw new Error('Invalid response format from lookup mappings API')
       }
@@ -42,12 +73,12 @@ export function useLookupMappings() {
       console.error('Error fetching lookup mappings:', err)
       error.value = err.message
 
-      // Fall back to empty mappings on error
+      // Fall back to only fallback mappings on error
       mappings.value = {
         categories: {},
         types: {},
-        formats: {},
-        sizes: {}
+        formats: FALLBACK_FORMAT_MAPPINGS,
+        sizes: FALLBACK_SIZE_MAPPINGS
       }
     } finally {
       isLoading.value = false
