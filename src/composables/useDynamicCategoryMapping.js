@@ -7,12 +7,9 @@ import { useLookupMappings } from './useLookupMappings.js'
  * Falls back to pattern-based detection when lookup fails
  */
 export function useDynamicCategoryMapping(beverages) {
-  const { categories: serverCategories, fetchMappings, isReady } = useLookupMappings()
+  const { categories: serverCategories, isReady } = useLookupMappings()
 
-  // Initialize lookup mappings if not already loaded
-  if (!isReady.value) {
-    fetchMappings()
-  }
+  // Lookup mappings are pre-loaded via SSG - no need to fetch from API
 
   // Wine varietal patterns for extraction
   const WINE_PATTERNS = [
