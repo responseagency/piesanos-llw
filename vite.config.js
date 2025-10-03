@@ -15,7 +15,7 @@ export default defineConfig({
   },
   esbuild: {
     target: 'es2020',
-    drop: ['debugger'],
+    drop: ['console', 'debugger'],
   },
   build: {
     target: 'es2020',
