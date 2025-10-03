@@ -467,11 +467,17 @@ export default {
     }
 
     const loadData = async () => {
-      // Load both beverage and location data
-      await Promise.all([
-        fetchData(),
-        fetchLocations()
-      ])
+      // Only load data if not already loaded from SSR/SSG
+      const needsBeverageData = !data.value || data.value.length === 0
+      const needsLocationData = !locations.value || locations.value.length === 0
+
+      if (needsBeverageData || needsLocationData) {
+        const promises = []
+        if (needsBeverageData) promises.push(fetchData())
+        if (needsLocationData) promises.push(fetchLocations())
+
+        await Promise.all(promises)
+      }
 
       if (!error.value && !locationError.value) {
         lastUpdated.value = new Date().toLocaleString()
