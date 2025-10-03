@@ -558,15 +558,13 @@ export default {
       // Only load data if not already loaded from SSR/SSG
       const needsBeverageData = !data.value || data.value.length === 0
       const needsLocationData = !locations.value || locations.value.length === 0
-      const needsLookupData = !lookupMappings.value ||
-        (Object.keys(lookupMappings.value.types || {}).length === 0 &&
-         Object.keys(lookupMappings.value.categories || {}).length === 0)
+      // Lookup mappings are pre-loaded via SSG - no need to fetch from API
 
-      if (needsBeverageData || needsLocationData || needsLookupData) {
+      if (needsBeverageData || needsLocationData) {
         const promises = []
         if (needsBeverageData) promises.push(fetchData())
         if (needsLocationData) promises.push(fetchLocations())
-        if (needsLookupData) promises.push(fetchMappings())
+        // fetchMappings() removed - lookup mappings come from window.__INITIAL_STATE__
 
         await Promise.all(promises)
       }
