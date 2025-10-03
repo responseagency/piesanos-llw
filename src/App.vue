@@ -276,7 +276,7 @@
 <script>
 import { ref, computed, onMounted, provide } from 'vue'
 import { useAirtable } from './composables/useAirtable'
-import { useLocationFilter } from './composables/useLocationFilter'
+import { useLocationFilter } from './composables/useLocationFilter.router'
 import { useDynamicCategoryMapping } from './composables/useDynamicCategoryMapping'
 import { useUrlParams } from './composables/useUrlParams'
 import BeverageSection from './components/BeverageSection.vue'

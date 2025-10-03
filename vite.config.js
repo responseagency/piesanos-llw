@@ -16,5 +16,14 @@ export default defineConfig({
   esbuild: {
     target: 'esnext',
     drop: ['console', 'debugger'],
+  },
+  ssgOptions: {
+    script: 'async',
+    formatting: 'minify',
+    crittersOptions: {
+      reduceInlineStyles: false,
+    },
+    // Format for generated files
+    format: 'esm',
   }
 })
