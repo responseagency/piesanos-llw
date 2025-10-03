@@ -14,8 +14,11 @@ export default defineConfig({
     },
   },
   esbuild: {
-    target: 'esnext',
+    target: 'es2020',
     drop: ['debugger'],
+  },
+  build: {
+    target: 'es2020',
   },
   ssgOptions: {
     script: 'sync',
