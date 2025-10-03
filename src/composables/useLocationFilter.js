@@ -22,14 +22,25 @@ export function useLocationFilter() {
       url.searchParams.delete('location')
     }
 
+    // Ensure only one hash character in URL by removing any existing hash and properly reconstructing
+    const urlString = url.toString()
+    const cleanUrl = urlString.split('#')[0] // Remove any hash fragments
+
     // Update URL without page reload
-    window.history.pushState({}, '', url.toString())
+    window.history.pushState({}, '', cleanUrl)
   }
 
   // Get location by slug
   const getLocationBySlug = (slug) => {
     return locations.value.find(location => {
       const locationSlug = locationService.getLocationSlug(location)
+      const formattedName = locationService.formatLocationName(location)
+
+      // Debug logging for location matching
+      if (process.env.NODE_ENV === 'development') {
+        console.log(`Comparing slug: "${slug}" with location slug: "${locationSlug}" (formatted name: "${formattedName}")`)
+      }
+
       return locationSlug === slug
     })
   }
@@ -75,11 +86,29 @@ export function useLocationFilter() {
   const initializeSelectedLocation = () => {
     const locationSlugFromURL = getLocationFromURL()
 
+    if (process.env.NODE_ENV === 'development') {
+      console.log(`🔍 Initializing location selection:`)
+      console.log(`  - URL slug: "${locationSlugFromURL}"`)
+      console.log(`  - Available locations: ${activeLocations.value.length}`)
+      activeLocations.value.forEach((loc, index) => {
+        const slug = locationService.getLocationSlug(loc)
+        const formattedName = locationService.formatLocationName(loc)
+        console.log(`    ${index + 1}. ID: ${loc.id}, Name: "${formattedName}", Slug: "${slug}"`)
+      })
+    }
+
     if (locationSlugFromURL) {
       const locationFromURL = getLocationBySlug(locationSlugFromURL)
       if (locationFromURL) {
         selectedLocationId.value = locationFromURL.id
+        if (process.env.NODE_ENV === 'development') {
+          console.log(`✅ Found location from URL: ${locationService.formatLocationName(locationFromURL)}`)
+        }
         return
+      } else {
+        if (process.env.NODE_ENV === 'development') {
+          console.log(`❌ Could not find location for slug: "${locationSlugFromURL}"`)
+        }
       }
     }
 
@@ -89,21 +118,39 @@ export function useLocationFilter() {
       // Update URL with default location
       const defaultSlug = locationService.getLocationSlug(activeLocations.value[0])
       updateURL(defaultSlug)
+      if (process.env.NODE_ENV === 'development') {
+        console.log(`🔄 Defaulted to first location: ${locationService.formatLocationName(activeLocations.value[0])}`)
+      }
     }
   }
 
   // Set selected location and update URL
   const setSelectedLocation = (locationId) => {
+    if (process.env.NODE_ENV === 'development') {
+      console.log(`🎯 Setting location to ID: ${locationId}`)
+    }
+
     selectedLocationId.value = locationId
 
     if (locationId) {
       const location = locations.value.find(loc => loc.id === locationId)
       if (location) {
         const slug = locationService.getLocationSlug(location)
+        const formattedName = locationService.formatLocationName(location)
         updateURL(slug)
+        if (process.env.NODE_ENV === 'development') {
+          console.log(`✅ Updated URL with location: "${formattedName}" (slug: "${slug}")`)
+        }
+      } else {
+        if (process.env.NODE_ENV === 'development') {
+          console.log(`❌ Could not find location with ID: ${locationId}`)
+        }
       }
     } else {
       updateURL(null)
+      if (process.env.NODE_ENV === 'development') {
+        console.log(`🔄 Cleared location selection`)
+      }
     }
   }
 

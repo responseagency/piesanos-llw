@@ -31,12 +31,24 @@ class LocationService {
 
   // Helper methods for working with location data
   formatLocationName(location) {
-    return location.fields?.['Location Name']?.trim() || 'Unknown Location'
+    const locationName = location.fields?.['Location Name']?.trim() || 'Unknown Location'
+    const locationArea = location.fields?.['Location Area']?.trim()
+
+    // Concatenate location name and area for unique identification
+    if (locationArea) {
+      return `${locationName} - ${locationArea}`
+    }
+
+    return locationName
   }
 
   getLocationSlug(location) {
     const name = this.formatLocationName(location)
-    return name.toLowerCase().replace(/\s+/g, '-').replace(/[^a-z0-9-]/g, '')
+    return name.toLowerCase()
+      .replace(/\s+/g, '-')           // Replace spaces with dashes
+      .replace(/[^a-z0-9-]/g, '')     // Remove non-alphanumeric except dashes
+      .replace(/-+/g, '-')            // Collapse multiple dashes into single dash
+      .replace(/^-|-$/g, '')          // Remove leading/trailing dashes
   }
 
   isLocationActive(location) {

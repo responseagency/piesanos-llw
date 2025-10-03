@@ -3,12 +3,6 @@
     <!-- Main Wine Heading -->
     <div class="mb-8 border-l-4 border-purple-600 pl-6 ml-2">
       <h1 class="text-4xl font-bold text-gray-900 mb-2">🍷 Wine</h1>
-      <div class="text-lg text-gray-600">
-        {{ totalWineCount }} wines available
-        <span v-if="avgWinePrice > 0">
-          • Average: ${{ avgWinePrice }}
-        </span>
-      </div>
     </div>
 
     <!-- Wine Subcategories -->

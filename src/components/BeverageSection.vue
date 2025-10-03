@@ -2,19 +2,18 @@
   <div class="beverage-section mb-8">
     <div class="flex items-center justify-between mb-4">
       <h2 :class="isSubcategory ? 'text-xl font-semibold text-gray-700' : 'text-2xl font-bold text-gray-800'">{{ type }}</h2>
-      <div class="text-sm text-gray-600">
-        {{ beverages.length }} items
-        <span v-if="stats.avgPrice > 0">
-          • Avg: ${{ stats.avgPrice }}
-        </span>
-      </div>
     </div>
 
     <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
       <div
         v-for="beverage in beverages"
         :key="beverage.id"
-        class="bg-white border border-gray-200 rounded-lg p-4 hover:shadow-md transition-shadow"
+        :class="[
+          'bg-white rounded-lg p-4 hover:shadow-md transition-shadow',
+          isFeaturedAtCurrentLocation(beverage)
+            ? 'border-2 border-orange-500'
+            : 'border border-gray-200'
+        ]"
       >
         <div class="flex justify-between items-start mb-2">
           <div class="flex-1">
@@ -45,6 +44,9 @@
           <div v-if="beverage.fields['Producer (from Beverage Item)']">
             <span class="font-medium">Producer:</span> {{ getProducer(beverage) }}
           </div>
+          <div v-if="getNotes(beverage)" class="mt-2 p-2 bg-gray-50 rounded text-xs text-gray-700 italic">
+            {{ getNotes(beverage) }}
+          </div>
         </div>
 
       </div>
@@ -61,9 +63,12 @@ export default {
   setup() {
     // Inject the dynamic category mapping from the parent
     const categoryMapping = inject('categoryMapping', null)
+    // Inject the location filter from the parent
+    const locationFilter = inject('locationFilter', null)
 
     return {
-      categoryMapping
+      categoryMapping,
+      locationFilter
     }
   },
   props: {
@@ -194,6 +199,10 @@ export default {
       return producer ? producer[0] : 'Unknown'
     },
 
+    getNotes(beverage) {
+      const notes = beverage.fields['Notes']
+      return notes && notes.length > 0 ? notes[0] : null
+    },
 
     getBeverageCategory(beverage) {
       const categories = beverage.fields['Beverage Categories (from Beverage Item)']
@@ -213,6 +222,20 @@ export default {
       }
 
       return categoryName
+    },
+
+    isFeaturedAtCurrentLocation(beverage) {
+      // Check if beverage is featured at the currently selected location
+      if (!this.locationFilter || !this.locationFilter.selectedLocationId.value) {
+        return false
+      }
+
+      const featured = beverage.fields['Featured']
+      if (!featured || !Array.isArray(featured)) {
+        return false
+      }
+
+      return featured.includes(this.locationFilter.selectedLocationId.value)
     }
   }
 }

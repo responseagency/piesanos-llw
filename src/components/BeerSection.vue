@@ -3,12 +3,6 @@
     <!-- Main Beer Heading -->
     <div class="mb-8 border-l-4 border-amber-600 pl-6 ml-2">
       <h1 class="text-4xl font-bold text-gray-900 mb-2">🍺 Beer</h1>
-      <div class="text-lg text-gray-600">
-        {{ totalBeerCount }} beers available
-        <span v-if="avgBeerPrice > 0">
-          • Average: ${{ avgBeerPrice }}
-        </span>
-      </div>
     </div>
 
     <!-- Beer Subcategories -->

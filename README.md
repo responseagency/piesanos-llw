@@ -37,8 +37,9 @@ A Vue.js 3 application for displaying restaurant beverage menus with intelligent
 
 ### Data Integration
 - **Airtable API**: Token-based authentication with environment variables
-- **Caching**: 24-hour file-based cache for performance (`airtable-cache.json`)
-- **Data Refresh**: Manual cache clearing for updated field access
+- **Pagination**: Automatic handling of Airtable's 100-record limit to fetch all records
+- **Caching**: 24-hour file-based cache for performance (`airtable-cache.json`, `locations-cache.json`, `lookup-tables-cache.json`)
+- **Data Refresh**: Manual cache clearing via `/api/refresh-data` endpoint
 
 ### Components Structure
 ```

@@ -1,7 +1,7 @@
 class AirtableService {
   constructor() {
     const port = import.meta.env.VITE_PORT || 3002
-    this.apiEndpoint = `http://localhost:${port}/api/airtable`
+    this.apiEndpoint = `http://localhost:${port}/api/airtable-enhanced`
   }
 
   async fetchData() {

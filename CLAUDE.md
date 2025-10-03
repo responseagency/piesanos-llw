@@ -1,0 +1,2 @@
+- always use the vue expert for this
+- never ask to run npm run dev, I always have the servers running using npm run start

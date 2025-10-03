@@ -1,6 +1,10 @@
+@import url('https://fonts.googleapis.com/css2?family=Sen:wght@400;500;600;700;800&display=swap');
 @import "tailwindcss";
 
 @theme {
+  --font-sans: 'Sen', ui-sans-serif, system-ui, sans-serif, "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol", "Noto Color Emoji";
+  --font-serif: 'Georgia', ui-serif, serif;
+  --font-mono: 'Menlo', ui-monospace, Monaco, 'Cascadia Code', 'Segoe UI Mono', 'Roboto Mono', 'Oxygen Mono', 'Ubuntu Monospace', 'Source Code Pro', 'Fira Mono', 'Droid Sans Mono', 'Courier New', monospace;
   --color-gray-50: #f9fafb;
   --color-gray-100: #f3f4f6;
   --color-gray-200: #e5e7eb;
@@ -60,4 +64,10 @@
   --color-green-800: #016630;
   --color-green-900: #0d542b;
   --color-green-950: #032e15;
+}
+
+
+.stroke-text{
+-webkit-text-stroke: 4px var(--color-gold-800);
+    paint-order: stroke fill;
 }

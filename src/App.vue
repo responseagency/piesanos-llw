@@ -1,33 +1,16 @@
 <template>
-  <div class="min-h-screen bg-gray-50">
-    <!-- Header -->
-    <div class="bg-white shadow-sm border-b">
-      <div class="max-w-7xl mx-auto px-4 py-4">
-        <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
-          <h1 class="text-3xl font-bold text-gray-900">Beverage Menu</h1>
+  <div class="min-h-screen bg-gold-50">
+    <!-- Promo Bar -->
+    <PromoBar />
 
-          <!-- Location Selector -->
-          <div class="flex flex-col sm:flex-row sm:items-center gap-4">
-            <LocationSelector
-              :selected-location-id="selectedLocationId"
-              :locations="locations"
-              :loading="locationLoading"
-              :error="locationError"
-              :show-label="true"
-              size="medium"
-              @location-changed="handleLocationChange"
-            />
+    <!-- Menu Bar -->
+    <MenuBar />
 
-            <div class="text-sm text-gray-600 whitespace-nowrap">
-              Last updated: {{ lastUpdated || 'Never' }}
-            </div>
-          </div>
-        </div>
-      </div>
-    </div>
+    <!-- Drink Submenu -->
+    <DrinkSubmenu />
 
     <!-- Content -->
-    <div class="max-w-7xl mx-auto px-4 py-8">
+    <div class="max-w-[1024px] mx-auto px-4 py-8">
       <div v-if="loading" class="text-center py-12">
         <div class="inline-block animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
         <p class="mt-2 text-gray-600">Loading beverages...</p>
@@ -38,98 +21,14 @@
         <p class="text-red-600 mt-1">{{ error }}</p>
       </div>
 
-      <div v-else-if="organizedBeverages && Object.keys(organizedBeverages).length > 0">
-        <!-- Summary Stats -->
-        <div class="bg-white rounded-lg shadow-sm border p-6 mb-8">
-          <h2 class="text-xl font-semibold mb-4">Menu Overview</h2>
-          <div class="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-4 mb-6">
-            <div
-              v-for="(stats, type) in beverageStats"
-              :key="type"
-              class="text-center"
-            >
-              <div class="text-2xl font-bold text-gray-900">{{ stats.count }}</div>
-              <div class="text-sm text-gray-600">{{ type }}</div>
-              <div v-if="stats.avgPrice > 0" class="text-xs text-gray-500">
-                Avg: ${{ stats.avgPrice }}
-              </div>
-            </div>
-          </div>
-
-          <!-- Dynamic Category Mapping Stats -->
-          <div v-if="mappingStats" class="bg-blue-50 border border-blue-200 rounded-lg p-4">
-            <h3 class="text-sm font-semibold text-blue-800 mb-2">Smart Category Mapping</h3>
-            <div class="grid grid-cols-2 md:grid-cols-4 gap-4 text-sm">
-              <div class="text-center">
-                <div class="text-lg font-bold text-blue-600">{{ mappingStats.totalCategories }}</div>
-                <div class="text-blue-700">Total Categories</div>
-              </div>
-              <div class="text-center">
-                <div class="text-lg font-bold text-green-600">{{ mappingStats.dynamicallyMapped }}</div>
-                <div class="text-green-700">Auto-Detected</div>
-              </div>
-              <div class="text-center">
-                <div class="text-lg font-bold text-yellow-600">{{ mappingStats.fallbackMapped }}</div>
-                <div class="text-yellow-700">Manual Mapping</div>
-              </div>
-              <div class="text-center">
-                <div class="text-lg font-bold text-red-600">{{ mappingStats.unmapped }}</div>
-                <div class="text-red-700">Unmapped</div>
-              </div>
-            </div>
-            <div v-if="mappingStats.dynamicallyMapped > 0" class="text-xs text-blue-600 mt-2">
-              🤖 {{ mappingStats.dynamicallyMapped }} categories automatically detected from beverage names!
-            </div>
-          </div>
-        </div>
-
-        <!-- Filter Controls -->
-        <div class="bg-white rounded-lg shadow-sm border p-4 mb-8">
-          <div class="flex flex-wrap gap-4 items-center">
-            <label class="flex items-center">
-              <input
-                v-model="showOnlyAvailable"
-                type="checkbox"
-                class="mr-2"
-              >
-              <span class="text-sm">Show only available items</span>
-            </label>
-            <label class="flex items-center">
-              <span class="text-sm mr-2">Sort by:</span>
-              <select v-model="sortBy" class="border rounded px-2 py-1 text-sm">
-                <option value="name">Name</option>
-                <option value="price-asc">Price (Low to High)</option>
-                <option value="price-desc">Price (High to Low)</option>
-              </select>
-            </label>
-          </div>
-        </div>
-
-        <!-- Beverage Sections -->
-        <div class="space-y-8">
-          <!-- Wine Section (grouped) -->
-          <WineSection
-            v-if="wineSubcategories && Object.keys(wineSubcategories).length > 0"
-            :wine-subcategories="wineSubcategories"
-            :stats="beverageStats"
-          />
-
-          <!-- Beer Section (grouped) -->
-          <BeerSection
-            v-if="beerSubcategories && Object.keys(beerSubcategories).length > 0"
-            :beer-subcategories="beerSubcategories"
-            :stats="beverageStats"
-          />
-
-          <!-- Other Beverage Sections -->
-          <BeverageSection
-            v-for="(beverages, type) in otherBeverages"
-            :key="type"
-            :type="type"
-            :beverages="beverages"
-            :stats="beverageStats[type] || {}"
-            :hide-glass-info="type === 'Cocktails'"
-            :show-format-info="!['Cocktails', 'Hard Seltzer'].includes(type)"
+      <div v-else-if="hierarchicalBeverages && Object.keys(hierarchicalBeverages).length > 0">
+        <!-- Hierarchical Drink Sections -->
+        <div class="space-y-12">
+          <DrinkSection
+            v-for="(section, sectionId) in hierarchicalBeverages"
+            :key="sectionId"
+            :section-id="sectionId"
+            :section="section"
           />
         </div>
       </div>
@@ -138,6 +37,26 @@
         <p class="text-gray-600">No beverages available</p>
       </div>
     </div>
+
+    <!-- Compact Debug Panel (Debug Mode Only) -->
+    <DebugPanel
+      v-if="isDebugMode"
+      :selected-location-id="selectedLocationId"
+      :locations="locations"
+      :location-loading="locationLoading"
+      :location-error="locationError"
+      :last-updated="lastUpdated"
+      :beverage-stats="hierarchicalStats"
+      :mapping-stats="mappingStats"
+      v-model:show-only-available="showOnlyAvailable"
+      v-model:sort-by="sortBy"
+      :is-refreshing="isRefreshing"
+      :refresh-message="refreshMessage"
+      :refresh-error="refreshError"
+      @location-changed="handleLocationChange"
+      @refresh="refreshData"
+    />
+
   </div>
 </template>
 
@@ -146,16 +65,28 @@ import { ref, computed, onMounted, provide } from 'vue'
 import { useAirtable } from './composables/useAirtable'
 import { useLocationFilter } from './composables/useLocationFilter'
 import { useDynamicCategoryMapping } from './composables/useDynamicCategoryMapping'
+import { useUrlParams } from './composables/useUrlParams'
 import BeverageSection from './components/BeverageSection.vue'
 import WineSection from './components/WineSection.vue'
 import BeerSection from './components/BeerSection.vue'
 import LocationSelector from './components/LocationSelector.vue'
+import PromoBar from './components/PromoBar.vue'
+import MenuBar from './components/MenuBar.vue'
+import DrinkSection from './components/DrinkSection.vue'
+import DrinkSubmenu from './components/DrinkSubmenu.vue'
+import DebugPanel from './components/DebugPanel.vue'
 import {
   groupBeveragesByType,
   sortBeveragesByPrice,
   filterBeverages,
   getBeverageStats
 } from './utils/beverageOrganizer'
+import {
+  organizeByHierarchy,
+  filterHierarchy,
+  sortHierarchyByPrice,
+  getHierarchyStats
+} from './utils/hierarchicalBeverageOrganizer'
 
 export default {
   name: 'App',
@@ -163,7 +94,12 @@ export default {
     BeverageSection,
     WineSection,
     BeerSection,
-    LocationSelector
+    LocationSelector,
+    PromoBar,
+    MenuBar,
+    DrinkSection,
+    DrinkSubmenu,
+    DebugPanel
   },
   setup() {
     const { data, loading, error, fetchData } = useAirtable()
@@ -179,9 +115,15 @@ export default {
       setSelectedLocation
     } = useLocationFilter()
     const { getCategoryName, dynamicCategoryMapping, mappingStats } = useDynamicCategoryMapping(data)
+    const { isDebugMode } = useUrlParams()
     const lastUpdated = ref(null)
     const showOnlyAvailable = ref(false)
     const sortBy = ref('name')
+
+    // Debug refresh state
+    const isRefreshing = ref(false)
+    const refreshMessage = ref('')
+    const refreshError = ref(false)
 
     // Provide the dynamic category mapping and location filter to child components
     provide('categoryMapping', {
@@ -271,6 +213,41 @@ export default {
       return result
     })
 
+    // Computed property to get location number from selected location
+    const selectedLocationNumber = computed(() => {
+      if (!selectedLocation.value) return null
+      return selectedLocation.value.fields?.['Location Number'] || null
+    })
+
+    // NEW: Hierarchical beverage organization
+    const hierarchicalBeverages = computed(() => {
+      if (!data.value) return {}
+
+      // First organize beverages into hierarchical structure with location awareness
+      let organized = organizeByHierarchy(data.value, selectedLocationNumber.value)
+
+      // Apply filtering based on current settings
+      organized = filterHierarchy(organized, {
+        showOnlyAvailable: showOnlyAvailable.value,
+        selectedLocationId: selectedLocationId.value,
+        locationNumber: selectedLocationNumber.value
+      })
+
+      // Apply sorting if needed
+      if (sortBy.value.startsWith('price')) {
+        const ascending = sortBy.value === 'price-asc'
+        organized = sortHierarchyByPrice(organized, ascending)
+      }
+
+      return organized
+    })
+
+    // NEW: Hierarchical beverage stats
+    const hierarchicalStats = computed(() => {
+      if (!hierarchicalBeverages.value) return {}
+      return getHierarchyStats(hierarchicalBeverages.value)
+    })
+
     // Handle location change from component
     const handleLocationChange = (newLocationId) => {
       setSelectedLocation(newLocationId)
@@ -285,6 +262,53 @@ export default {
 
       if (!error.value && !locationError.value) {
         lastUpdated.value = new Date().toLocaleString()
+      }
+    }
+
+    const refreshData = async () => {
+      if (isRefreshing.value) return
+
+      isRefreshing.value = true
+      refreshMessage.value = ''
+      refreshError.value = false
+
+      try {
+        const port = import.meta.env.VITE_PORT || 3002
+        const response = await fetch(`http://localhost:${port}/api/refresh-data`, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json'
+          }
+        })
+
+        const result = await response.json()
+
+        if (!response.ok || !result.success) {
+          throw new Error(result.error || `HTTP ${response.status}`)
+        }
+
+        // Refresh the local data after successful server refresh
+        await loadData()
+
+        refreshMessage.value = `✅ Refreshed ${result.stats.beverages} beverages, ${result.stats.locations} locations, ${result.stats.lookupRecords} lookup records`
+        refreshError.value = false
+
+        // Clear success message after 5 seconds
+        setTimeout(() => {
+          refreshMessage.value = ''
+        }, 5000)
+
+      } catch (error) {
+        console.error('Refresh failed:', error)
+        refreshMessage.value = `❌ Refresh failed: ${error.message}`
+        refreshError.value = true
+
+        // Clear error message after 8 seconds
+        setTimeout(() => {
+          refreshMessage.value = ''
+        }, 8000)
+      } finally {
+        isRefreshing.value = false
       }
     }
 
@@ -318,9 +342,20 @@ export default {
 
       // Event handlers
       handleLocationChange,
+      refreshData,
 
       // Computed stats
-      mappingStats
+      mappingStats,
+
+      // NEW: Hierarchical data
+      hierarchicalBeverages,
+      hierarchicalStats,
+
+      // Debug mode
+      isDebugMode,
+      isRefreshing,
+      refreshMessage,
+      refreshError
     }
   }
 }

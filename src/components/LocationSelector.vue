@@ -1,5 +1,5 @@
 <template>
-  <div class="location-selector">
+  <div class="location-selector ">
     <!-- Loading State -->
     <div v-if="loading" class="flex items-center space-x-2 text-gray-600">
       <div class="animate-spin rounded-full h-4 w-4 border-b-2 border-blue-600"></div>
@@ -32,7 +32,9 @@
           ]"
           :disabled="disabled"
         >
-          <option value="" v-if="allowAllLocations">All Locations</option>
+          <option value="" v-if="allowAllLocations">
+            {{ isDebugMode ? 'All Locations (all)' : 'All Locations' }}
+          </option>
           <option
             v-for="location in activeLocations"
             :key="location.id"
@@ -66,6 +68,7 @@
 <script>
 import { computed, inject } from 'vue'
 import locationService from '../services/location.js'
+import { useUrlParams } from '../composables/useUrlParams.js'
 
 export default {
   name: 'LocationSelector',
@@ -116,16 +119,30 @@ export default {
     // Try to get location filter functions from injection (when used with composable)
     const locationFilter = inject('locationFilter', null)
 
+    // Get debug mode state
+    const { isDebugMode } = useUrlParams()
+
     // Computed properties
     const activeLocations = computed(() => {
       return props.locations.filter(location => locationService.isLocationActive(location))
     })
 
     const selectedLocationName = computed(() => {
-      if (!props.selectedLocationId || !props.locations.length) return 'All Locations'
+      if (!props.selectedLocationId || !props.locations.length) {
+        return isDebugMode.value ? 'All Locations (all)' : 'All Locations'
+      }
 
       const location = props.locations.find(loc => loc.id === props.selectedLocationId)
-      return location ? locationService.formatLocationName(location) : 'All Locations'
+      if (location) {
+        const baseName = locationService.formatLocationName(location)
+        if (isDebugMode.value) {
+          const locationNumber = location.fields?.['Location Number'] || location.id
+          const slug = locationService.getLocationSlug(location)
+          return `${baseName} (ID: ${locationNumber}, Slug: ${slug})`
+        }
+        return baseName
+      }
+      return isDebugMode.value ? 'All Locations (all)' : 'All Locations'
     })
 
     const sizeClass = computed(() => {
@@ -139,7 +156,13 @@ export default {
 
     // Methods
     const formatLocationName = (location) => {
-      return locationService.formatLocationName(location)
+      const baseName = locationService.formatLocationName(location)
+      if (isDebugMode.value) {
+        const locationNumber = location.fields?.['Location Number'] || location.id
+        const slug = locationService.getLocationSlug(location)
+        return `${baseName} (ID: ${locationNumber}, Slug: ${slug})`
+      }
+      return baseName
     }
 
     const handleLocationChange = (event) => {
@@ -159,7 +182,8 @@ export default {
       selectedLocationName,
       sizeClass,
       formatLocationName,
-      handleLocationChange
+      handleLocationChange,
+      isDebugMode
     }
   }
 }
