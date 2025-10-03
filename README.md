@@ -2,6 +2,24 @@
 
 A Vue.js 3 application for displaying restaurant beverage menus with intelligent categorization and dynamic data integration from Airtable.
 
+## Location URLs
+
+- **Bradenton**: https://drinks.piesanostogo.com/?location=bradenton
+- **Clermont**: https://drinks.piesanostogo.com/?location=clermont
+- **East Orlando - Town Park**: https://drinks.piesanostogo.com/?location=east-orlando-town-park
+- **Gainesville - Millhopper Rd**: https://drinks.piesanostogo.com/?location=gainesville-millhopper-rd
+- **Gainesville - Tower Rd**: https://drinks.piesanostogo.com/?location=gainesville-tower-rd
+- **Gainesville - University Ave**: https://drinks.piesanostogo.com/?location=gainesville-university-ave
+- **Lake City**: https://drinks.piesanostogo.com/?location=lake-city
+- **Ocala - Canopy Oaks OTOW**: https://drinks.piesanostogo.com/?location=ocala-canopy-oaks-otow
+- **Ocala - Grand Oaks by Trinity**: https://drinks.piesanostogo.com/?location=ocala-grand-oaks-by-trinity
+- **St Augustine - Cobble Stone Village**: https://drinks.piesanostogo.com/?location=st-augustine-cobble-stone-village
+- **Tallahasse**: https://drinks.piesanostogo.com/?location=tallahasse
+- **The Villages - Lake Deaton**: https://drinks.piesanostogo.com/?location=the-villages-lake-deaton
+- **The Villages - Southern Trace**: https://drinks.piesanostogo.com/?location=the-villages-southern-trace
+- **Viera**: https://drinks.piesanostogo.com/?location=viera
+- **Windemere**: https://drinks.piesanostogo.com/?location=windemere
+
 ## Features
 
 ### 🍷 Smart Wine Grouping
@@ -37,8 +55,9 @@ A Vue.js 3 application for displaying restaurant beverage menus with intelligent
 
 ### Data Integration
 - **Airtable API**: Token-based authentication with environment variables
-- **Caching**: 24-hour file-based cache for performance (`airtable-cache.json`)
-- **Data Refresh**: Manual cache clearing for updated field access
+- **Pagination**: Automatic handling of Airtable's 100-record limit to fetch all records
+- **Caching**: 24-hour file-based cache for performance (`airtable-cache.json`, `locations-cache.json`, `lookup-tables-cache.json`)
+- **Data Refresh**: Manual cache clearing via `/api/refresh-data` endpoint
 
 ### Components Structure
 ```

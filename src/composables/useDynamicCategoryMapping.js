@@ -1,57 +1,17 @@
 import { computed, ref } from 'vue'
+import { useLookupMappings } from './useLookupMappings.js'
 
 /**
  * Composable for creating dynamic category mappings from beverage data
- * Uses beverage names to intelligently extract category names
- * Falls back to hardcoded mapping when auto-detection fails
+ * Uses server lookup mappings combined with intelligent name extraction
+ * Falls back to pattern-based detection when lookup fails
  */
 export function useDynamicCategoryMapping(beverages) {
-  // Fallback hardcoded mapping for categories that can't be auto-detected
-  const FALLBACK_CATEGORY_MAP = {
-    // Wine categories
-    'rec3LMUEO2LYN2cDU': 'Pinot Noir',
-    'recyxCfXAkHefadIf': 'Cabernet Sauvignon',
-    'recia45ay6ufvUWky': 'Chardonnay',
-    'rectFLkwxgzQ3D0KB': 'Merlot',
-    'recluaSc08iiIHgyM': 'Sauvignon Blanc',
-    'recgXcDaCVLyhzDul': 'Pinot Grigio',
-    'recwZEU5BlZE2jtCX': 'Prosecco',
-    'recPIvS68Z4TR2UT8': 'Chianti',
-    'recbC9MPh4Cb1BQtV': 'Sauvignon Blanc',
-    'recER0nyu6RkO2S8x': 'Moscato',
-    'rec8AL7hMBEzhHCNz': 'Riesling',
-    'recL5neVaKUUJhF2A': 'Riesling',
-    'recROGK5Wof47jFVp': 'Rosé',
+  const { categories: serverCategories, fetchMappings, isReady } = useLookupMappings()
 
-    // Beer categories
-    'recIuYd53dX1ka2i4': 'Pale Ale',
-    'recbu1NP9AtX16S1Q': 'IPA',
-    'recnQMUG04sDmuqJy': 'Wheat Beer',
-    'recZYS1A6usOIwB3T': 'Lager',
-    'recccKT3HrfPh2CVj': 'Lager',
-    'recE28gqsWn8M8ETS': 'Light Beer',
-    'recvpQhHJB3cDsUnr': 'Wheat Beer',
-    'recA3lUok7auQaRJk': 'IPA',
-    'rectcyZQCYfa0IW2C': 'Wheat Beer',
-    'recMe1XhLWGyVJfxt': 'Brown Ale',
-    'reclLSiwXVZZ27CTj': 'Hazy IPA',
-    'recSvwksArxewbD6X': 'Stout',
-    'reclTz3zyDDHMLuSh': 'Lager',
-    'rec9op2Thkd4RvlFI': 'Lager',
-    'recls75omZ2kEKc1j': 'Light Beer',
-    'receLZV64VEF2Vrsz': 'Craft Beer',
-    'recHgpD2o2LQKUHGS': 'Wheat Beer',
-    'rec04i9SQRRGRTxsY': 'Stout',
-
-    // Cider categories
-    'recc31M7zmpwDWWhX': 'Hard Cider',
-
-    // Hard Seltzer categories
-    'rectT4swjelSD6IXu': 'Hard Seltzer',
-
-    // Cocktail categories
-    'recaYJ43r97bZw8Z2': 'Cocktail',
-    'recmfO8mrt0LPRIqj': 'Martini',
+  // Initialize lookup mappings if not already loaded
+  if (!isReady.value) {
+    fetchMappings()
   }
 
   // Wine varietal patterns for extraction
@@ -170,17 +130,19 @@ export function useDynamicCategoryMapping(beverages) {
   }
 
   /**
-   * Create a dynamic mapping of category IDs to names based on actual beverage data
+   * Create a dynamic mapping of category IDs to names based on server lookup + pattern extraction
    */
   const dynamicCategoryMapping = computed(() => {
+    // Start with server categories as the primary source
+    const mapping = { ...serverCategories.value }
+
     if (!beverages.value || !Array.isArray(beverages.value)) {
-      return { ...FALLBACK_CATEGORY_MAP }
+      return mapping
     }
 
-    const mapping = { ...FALLBACK_CATEGORY_MAP }
     const categoryAnalysis = new Map() // Track analysis for debugging
 
-    // Analyze each beverage to extract category information
+    // For any categories not found in server lookup, try pattern extraction
     beverages.value.forEach(beverage => {
       const categories = beverage.fields?.['Beverage Categories (from Beverage Item)'] || []
       const beverageName = beverage.fields?.Name || ''
@@ -209,7 +171,11 @@ export function useDynamicCategoryMapping(beverages) {
 
     // Debug logging in development
     if (import.meta.env.DEV && categoryAnalysis.size > 0) {
-      console.log('Dynamic category mapping analysis:', Object.fromEntries(categoryAnalysis))
+      console.log('Pattern-extracted category mappings:', Object.fromEntries(categoryAnalysis))
+    }
+
+    if (import.meta.env.DEV) {
+      console.log('Final category mappings (server + patterns):', mapping)
     }
 
     return mapping
@@ -230,18 +196,24 @@ export function useDynamicCategoryMapping(beverages) {
    */
   const discoveredCategories = computed(() => {
     const mapping = dynamicCategoryMapping.value
-    const discovered = {}
-    const fallback = {}
+    const serverMapped = {}
+    const patternMapped = {}
 
     Object.entries(mapping).forEach(([id, name]) => {
-      if (FALLBACK_CATEGORY_MAP[id]) {
-        fallback[id] = name
+      if (serverCategories.value[id]) {
+        serverMapped[id] = name
       } else {
-        discovered[id] = name
+        patternMapped[id] = name
       }
     })
 
-    return { discovered, fallback }
+    return {
+      serverMapped,
+      patternMapped,
+      // Keep legacy names for backwards compatibility
+      discovered: patternMapped,
+      fallback: serverMapped
+    }
   })
 
   /**
@@ -251,8 +223,8 @@ export function useDynamicCategoryMapping(beverages) {
     if (!beverages.value) {
       return {
         totalCategories: 0,
-        dynamicallyMapped: 0,
-        fallbackMapped: 0,
+        serverMapped: 0,
+        patternMapped: 0,
         unmapped: 0
       }
     }
@@ -264,16 +236,16 @@ export function useDynamicCategoryMapping(beverages) {
     })
 
     const mapping = dynamicCategoryMapping.value
-    let dynamicallyMapped = 0
-    let fallbackMapped = 0
+    let serverMapped = 0
+    let patternMapped = 0
     let unmapped = 0
 
     allCategoryIds.forEach(id => {
       if (mapping[id]) {
-        if (FALLBACK_CATEGORY_MAP[id]) {
-          fallbackMapped++
+        if (serverCategories.value[id]) {
+          serverMapped++
         } else {
-          dynamicallyMapped++
+          patternMapped++
         }
       } else {
         unmapped++
@@ -282,9 +254,12 @@ export function useDynamicCategoryMapping(beverages) {
 
     return {
       totalCategories: allCategoryIds.size,
-      dynamicallyMapped,
-      fallbackMapped,
-      unmapped
+      serverMapped,
+      patternMapped,
+      unmapped,
+      // Legacy names for backwards compatibility
+      dynamicallyMapped: patternMapped,
+      fallbackMapped: serverMapped
     }
   })
 

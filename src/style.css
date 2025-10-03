@@ -1,5 +1,73 @@
+@import url('https://fonts.googleapis.com/css2?family=Sen:wght@400;500;600;700;800&display=swap');
 @import "tailwindcss";
 
 @theme {
+  --font-sans: 'Sen', ui-sans-serif, system-ui, sans-serif, "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol", "Noto Color Emoji";
+  --font-serif: 'Georgia', ui-serif, serif;
+  --font-mono: 'Menlo', ui-monospace, Monaco, 'Cascadia Code', 'Segoe UI Mono', 'Roboto Mono', 'Oxygen Mono', 'Ubuntu Monospace', 'Source Code Pro', 'Fira Mono', 'Droid Sans Mono', 'Courier New', monospace;
+  --color-gray-50: #f9fafb;
+  --color-gray-100: #f3f4f6;
+  --color-gray-200: #e5e7eb;
+  --color-gray-300: #d1d5db;
+  --color-gray-400: #99a1af;
+  --color-gray-500: #6a7282;
+  --color-gray-600: #4a5565;
+  --color-gray-700: #364153;
+  --color-gray-800: #1e2939;
+  --color-gray-900: #101828;
+  --color-gray-950: #030712;
 
+  --color-stone-50: #f8f7f8;
+  --color-stone-100: #f0eeee;
+  --color-stone-200: #ded9da;
+  --color-stone-300: #c1b8bb;
+  --color-stone-400: #9f9196;
+  --color-stone-500: #847379;
+  --color-stone-600: #6c5d62;
+  --color-stone-700: #584c50;
+  --color-stone-800: #4b4144;
+  --color-stone-900: #41393b;
+  --color-stone-950: #231f20;
+
+  --color-red-50: #fdf3f3;
+  --color-red-100: #fde3e3;
+  --color-red-200: #fccdcc;
+  --color-red-300: #f8aaa9;
+  --color-red-400: #f27877;
+  --color-red-500: #e74e4c;
+  --color-red-600: #d3312f;
+  --color-red-700: #b22523;
+  --color-red-800: #932221;
+  --color-red-900: #832524;
+  --color-red-950: #420e0d;
+
+  --color-gold-50: #fbf9f1;
+  --color-gold-100: #f5f1df;
+  --color-gold-200: #eae1be;
+  --color-gold-300: #dccb95;
+  --color-gold-400: #d1b574;
+  --color-gold-500: #c39b4c;
+  --color-gold-600: #b58641;
+  --color-gold-700: #976b37;
+  --color-gold-800: #7a5632;
+  --color-gold-900: #63472b;
+  --color-gold-950: #352415;
+
+  --color-green-50: #f0fdf4;
+  --color-green-100: #dcfce7;
+  --color-green-200: #b9f8cf;
+  --color-green-300: #7bf1a8;
+  --color-green-400: #05df72;
+  --color-green-500: #00c951;
+  --color-green-600: #00a63e;
+  --color-green-700: #008236;
+  --color-green-800: #016630;
+  --color-green-900: #0d542b;
+  --color-green-950: #032e15;
+}
+
+
+.stroke-text{
+-webkit-text-stroke: 4px var(--color-gold-800);
+    paint-order: stroke fill;
 }

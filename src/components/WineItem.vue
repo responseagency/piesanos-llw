@@ -1,52 +1,38 @@
 <template>
-  <div class="bg-white border border-gray-200 rounded-lg p-4 hover:shadow-md transition-shadow">
-    <div class="mb-3">
-      <h3 class="font-semibold text-gray-900 text-lg leading-tight">
-        {{ wineGroup.baseName }}
-      </h3>
-      <div class="text-sm text-gray-600 mt-1">
-        <span v-if="beverageCategory" class="inline-block bg-purple-100 text-purple-800 px-2 py-1 rounded text-xs mr-2">
-          {{ beverageCategory }}
+  <div :class="[
+    'px-4 py-2 md:p-4 transition-shadow',
+    isFeaturedAtCurrentLocation()
+      ? 'border-1 rounded-tr-lg rounded-br-lg border-gold-800'
+      : 'border-1 border-transparent'
+  ]">
+    <!-- Main content -->
+    <div class="flex justify-between items-start mb-2">
+      <div class="flex-1">
+        <h3 class="font-medium text-gray-900 text-base uppercase tracking-wide">
+          {{ wineGroup.baseName }}
+        </h3>
+      </div>
+
+      <!-- Price -->
+      <div class="text-right ml-4">
+        <span class="text-base font-bold text-gray-900">
+          {{ priceDisplay }}
         </span>
-        {{ wineGroup.servings.length }} serving option{{ wineGroup.servings.length > 1 ? 's' : '' }}
       </div>
     </div>
 
-    <div class="space-y-2">
-      <div
-        v-for="(serving, index) in wineGroup.servings"
-        :key="index"
-        class="flex justify-between items-center py-2 border-b border-gray-100 last:border-b-0"
-      >
-        <div class="flex-1">
-          <div class="font-medium text-gray-800">
-            {{ getFormatName(serving.fullRecord) }} - {{ getVolume(serving.fullRecord) }}oz
-          </div>
-          <div class="text-xs text-gray-500 mt-1">
-            <span v-if="serving.fullRecord.fields['Producer (from Beverage Item)']">
-              {{ getProducer(serving.fullRecord) }} •
-            </span>
-            <span v-if="serving.fullRecord.fields['ABV (from Beverage Item)']">
-              {{ getABV(serving.fullRecord) }}% ABV
-            </span>
-          </div>
-        </div>
-        <div class="text-right ml-4">
-          <span class="text-lg font-bold text-green-600">
-            ${{ serving.price.toFixed(2) }}
-          </span>
-        </div>
-      </div>
+    <!-- Category and metadata info -->
+    <div class="text-sm text-gray-600 flex flex-nowrap items-center gap-2 leading-relaxed">
+      <div v-if="wineMetadata.category">{{ wineMetadata.category }}</div>
+      <span v-if="wineMetadata.category && wineMetadata.abv"> ⸱ </span>
+      <div v-if="wineMetadata.abv">{{ wineMetadata.abv }}%</div>
+      <span v-if="(wineMetadata.category || wineMetadata.abv) && wineMetadata.origin"> ⸱ </span>
+      <div v-if="wineMetadata.origin">{{ wineMetadata.origin }}</div>
     </div>
 
-    <!-- Price range summary -->
-    <div class="mt-3 pt-2 border-t border-gray-100 text-sm text-gray-600">
-      <span v-if="priceRange.min !== priceRange.max">
-        Price range: ${{ priceRange.min.toFixed(2) }} - ${{ priceRange.max.toFixed(2) }}
-      </span>
-      <span v-else>
-        Single price: ${{ priceRange.min.toFixed(2) }}
-      </span>
+    <!-- Notes (if present) -->
+    <div v-if="wineMetadata.notes" class="mt-2 text-base font-light text-gray-700">
+      {{ wineMetadata.notes }}
     </div>
   </div>
 </template>
@@ -66,24 +52,95 @@ export default {
   setup() {
     // Inject the dynamic category mapping from the parent
     const categoryMapping = inject('categoryMapping', null)
+    // Inject the location filter from the parent
+    const locationFilter = inject('locationFilter', null)
 
     return {
-      categoryMapping
+      categoryMapping,
+      locationFilter
     }
   },
   computed: {
-    priceRange() {
-      const prices = this.wineGroup.servings.map(s => s.price).filter(p => p > 0)
+    normalizedServings() {
+      const servingMap = {
+        glass6oz: null,
+        glass9oz: null,
+        bottle: null
+      }
+
+      const FORMAT_IDS = {
+        GLASS: 'recDlaYGEmS23x6gB',
+        BOTTLE: 'recJOuYK67z0S23Gg'
+      }
+
+      this.wineGroup.servings.forEach(serving => {
+        const volume = serving.fullRecord.fields.Volume?.[0]
+        const formatId = serving.fullRecord.fields['Beverage Format']?.[0]
+
+        // Map to serving type - handle slight volume variations (6-6.5oz)
+        if (formatId === FORMAT_IDS.GLASS && volume >= 5.5 && volume <= 6.5) {
+          servingMap.glass6oz = serving
+        } else if (formatId === FORMAT_IDS.GLASS && volume >= 8.5 && volume <= 9.5) {
+          servingMap.glass9oz = serving
+        } else if (formatId === FORMAT_IDS.BOTTLE) {
+          servingMap.bottle = serving
+        }
+      })
+
+      return servingMap
+    },
+
+    wineMetadata() {
+      // Get metadata from first serving
+      if (!this.wineGroup.servings.length) {
+        return { category: null, abv: null, origin: null, notes: null }
+      }
+
+      const firstServing = this.wineGroup.servings[0].fullRecord
       return {
-        min: Math.min(...prices),
-        max: Math.max(...prices)
+        category: this.getBeverageCategory(firstServing),
+        abv: this.getABV(firstServing),
+        origin: this.getOrigin(firstServing),
+        notes: this.getNotes(firstServing)
       }
     },
 
-    beverageCategory() {
-      if (!this.wineGroup.servings.length) return null
+    priceDisplay() {
+      const formatPrice = (price) => {
+        // Remove trailing zeros and unnecessary decimal point
+        // 12.00 -> 12, 19.50 -> 19.5, 8.25 -> 8.25
+        return price.toFixed(2).replace(/\.?0+$/, '')
+      }
 
-      const categories = this.wineGroup.servings[0].fullRecord.fields['Beverage Categories (from Beverage Item)']
+      const prices = []
+
+      // 6oz Glass
+      if (this.normalizedServings.glass6oz) {
+        prices.push(formatPrice(this.normalizedServings.glass6oz.price))
+      } else {
+        prices.push('−')
+      }
+
+      // 9oz Glass
+      if (this.normalizedServings.glass9oz) {
+        prices.push(formatPrice(this.normalizedServings.glass9oz.price))
+      } else {
+        prices.push('−')
+      }
+
+      // Bottle
+      if (this.normalizedServings.bottle) {
+        prices.push(formatPrice(this.normalizedServings.bottle.price))
+      } else {
+        prices.push('−')
+      }
+
+      return prices.join(' / ')
+    }
+  },
+  methods: {
+    getBeverageCategory(wine) {
+      const categories = wine.fields['Beverage Categories (from Beverage Item)']
       if (!categories || !categories.length) return null
 
       // Use dynamic category mapping if available, otherwise fall back to static mapping
@@ -92,35 +149,37 @@ export default {
       }
 
       return getBeverageCategoryName(categories[0])
-    }
-  },
-  methods: {
-    getProducer(wine) {
-      const producer = wine.fields['Producer (from Beverage Item)']
-      return producer ? producer[0] : 'Unknown'
     },
 
     getABV(wine) {
       const abv = wine.fields['ABV (from Beverage Item)']
-      return abv ? (abv[0] * 100).toFixed(1) : 'N/A'
+      if (!abv || abv.length === 0) return null
+      return (abv[0] * 100).toFixed(1)
     },
 
-    getFormatName(wine) {
-      const formatId = wine.fields['Beverage Format']
-      if (!formatId || !formatId.length) return 'Unknown'
+    getOrigin(wine) {
+      const origin = wine.fields['Origin (from Beverage Item)']
+      return origin && origin.length > 0 ? origin[0] : null
+    },
 
-      // Map format IDs to readable names
-      const formatMap = {
-        'recDlaYGEmS23x6gB': 'Glass',
-        'recJOuYK67z0S23Gg': 'Bottle'
+    getNotes(wine) {
+      const notes = wine.fields['Notes (from Beverage Item)']
+      return notes && notes.length > 0 ? notes[0] : null
+    },
+
+    isFeaturedAtCurrentLocation() {
+      // Check if any serving of this wine group is featured at the currently selected location
+      if (!this.locationFilter || !this.locationFilter.selectedLocationId.value) {
+        return false
       }
 
-      return formatMap[formatId[0]] || 'Unknown'
-    },
-
-    getVolume(wine) {
-      const volume = wine.fields['Volume']
-      return volume && volume.length > 0 ? volume[0] : 'Unknown'
+      return this.wineGroup.servings.some(serving => {
+        const featured = serving.fullRecord.fields['Featured']
+        if (!featured || !Array.isArray(featured)) {
+          return false
+        }
+        return featured.includes(this.locationFilter.selectedLocationId.value)
+      })
     }
   }
 }
