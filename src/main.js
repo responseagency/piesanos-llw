@@ -24,16 +24,24 @@ export const createApp = ViteSSG(
         // Store in initialState for hydration
         initialState.beverages = beverageData
         initialState.locations = locationData
+
+        // Provide initialState to the app during SSR
+        app.provide('initialState', initialState)
       } catch (error) {
         console.error('Error loading data during SSG:', error)
         initialState.beverages = []
         initialState.locations = []
+
+        // Provide empty initialState even on error
+        app.provide('initialState', initialState)
       }
     }
 
     // Client-side only initialization
     if (isClient) {
-      // Any client-only setup can go here
+      // Provide initialState to the app during client hydration
+      // This allows components to access window.__INITIAL_STATE__
+      app.provide('initialState', initialState)
     }
   }
 )

@@ -434,9 +434,6 @@ export default {
 
     // NEW: Hierarchical beverage organization
     const hierarchicalBeverages = computed(() => {
-      console.log('[App] hierarchicalBeverages computed - data.value:', !!data.value, 'count:', data.value?.length)
-      console.log('[App] selectedLocationNumber:', selectedLocationNumber.value)
-      console.log('[App] selectedLocation:', selectedLocation.value?.fields?.['Location Name'])
       if (!data.value) return {}
 
       // First organize beverages into hierarchical structure with location awareness

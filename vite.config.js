@@ -15,10 +15,10 @@ export default defineConfig({
   },
   esbuild: {
     target: 'esnext',
-    drop: ['console', 'debugger'],
+    drop: ['debugger'],
   },
   ssgOptions: {
-    script: 'async',
+    script: 'sync',
     formatting: 'minify',
     crittersOptions: {
       reduceInlineStyles: false,

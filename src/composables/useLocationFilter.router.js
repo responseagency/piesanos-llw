@@ -1,4 +1,4 @@
-import { ref, computed, onMounted, useSSRContext } from 'vue'
+import { ref, computed, onMounted, inject } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import locationService from '../services/location.js'
 
@@ -11,19 +11,19 @@ export function useLocationFilter() {
   const loading = ref(false)
   const error = ref(null)
 
-  // Try to get initial state from SSR context
+  // Try to get initial state from Vue provide/inject
+  const initialState = inject('initialState', null)
+
   if (import.meta.env.SSR) {
-    try {
-      const ctx = useSSRContext()
-      if (ctx?.initialState?.locations) {
-        locations.value = ctx.initialState.locations
-      }
-    } catch (e) {
-      // SSR context not available, will fetch normally
+    // During SSR, use data from initialState
+    if (initialState?.locations) {
+      locations.value = initialState.locations
+      console.log('[useLocationFilter SSR] Using data from initialState, locations count:', locations.value?.length)
     }
   } else if (typeof window !== 'undefined' && window.__INITIAL_STATE__?.locations) {
     // Hydrate from window initial state on client
     locations.value = window.__INITIAL_STATE__.locations
+    console.log('[useLocationFilter] Hydrated from window.__INITIAL_STATE__, locations count:', locations.value?.length)
   }
 
   // Get current location from route meta
