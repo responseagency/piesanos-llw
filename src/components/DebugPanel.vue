@@ -170,7 +170,7 @@
 
 <script>
 import { ref } from 'vue'
-import locationService from '../services/location.js'
+import { getLocationSlug } from '../../utils/locationHelpers.js'
 
 export default {
   name: 'DebugPanel',
@@ -240,7 +240,7 @@ export default {
         // Find the location and generate its slug
         const location = props.locations.find(loc => loc.id === locationId)
         if (location) {
-          const slug = locationService.getLocationSlug(location)
+          const slug = getLocationSlug(location)
           router.push(`/${slug}`)
         }
       }
