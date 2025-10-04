@@ -47,12 +47,13 @@ const selectedLocation = computed(() => {
 const selectedLocationId = computed(() => selectedLocation.value?.id || null)
 
 // Filter beverages by location
+// Note: Airtable stores "Unavailable Locations" - filter out items that have this location in that field
 const beverages = computed(() => {
   if (!selectedLocationId.value) return allBeverages.value
 
   return allBeverages.value.filter(item => {
-    const itemLocations = item.fields?.Locations || []
-    return itemLocations.includes(selectedLocationId.value)
+    const unavailableLocations = item.fields?.['Unavailable Locations'] || []
+    return !unavailableLocations.includes(selectedLocationId.value)
   })
 })
 
