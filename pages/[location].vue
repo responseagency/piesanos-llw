@@ -21,6 +21,7 @@ import {
   sortHierarchyByPrice,
   getHierarchyStats
 } from '~/utils/hierarchicalBeverageOrganizer'
+import { getLocationSlug } from '~/utils/locationHelpers'
 
 // Get location slug from route
 const route = useRoute()
@@ -38,8 +39,7 @@ const lookupMappings = computed(() => beverageData.value?.mappings || {})
 // Find the selected location
 const selectedLocation = computed(() => {
   return locations.value.find(loc => {
-    const locName = loc.fields?.['Location Name'] || loc.fields?.Name || ''
-    const slug = locName.toLowerCase().replace(/\s+/g, '-')
+    const slug = getLocationSlug(loc)
     return slug === locationSlug.value
   })
 })
