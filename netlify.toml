@@ -8,9 +8,11 @@
 
 # Nuxt 4 SSR deployment - no redirects needed as Nuxt handles routing server-side
 
-# Environment variables should be set in Netlify UI:
-# - VITE_AIRTABLE_TOKEN
-# - VITE_AIRTABLE_BASE_ID
-# - VITE_AIRTABLE_TABLE_NAME
-# - VITE_AIRTABLE_VIEW_ID
-# - VITE_AIRTABLE_LOCATIONS_TABLE_NAME
+# Environment variables should be set in Netlify UI (without VITE_ prefix for security):
+# - AIRTABLE_TOKEN
+# - AIRTABLE_BASE_ID
+# - AIRTABLE_TABLE_NAME
+# - AIRTABLE_VIEW_ID
+# - AIRTABLE_LOCATIONS_TABLE_NAME
+#
+# Note: The old VITE_* variables are still supported as fallback during migration

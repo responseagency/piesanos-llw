@@ -22,11 +22,12 @@ export default defineNuxtConfig({
   },
 
   runtimeConfig: {
-    airtableToken: process.env.VITE_AIRTABLE_TOKEN,
-    airtableBaseId: process.env.VITE_AIRTABLE_BASE_ID,
-    airtableTableName: process.env.VITE_AIRTABLE_TABLE_NAME,
-    airtableViewId: process.env.VITE_AIRTABLE_VIEW_ID,
-    airtableLocationsTableName: process.env.VITE_AIRTABLE_LOCATIONS_TABLE_NAME,
+    // Server-side only - not exposed to client
+    airtableToken: process.env.AIRTABLE_TOKEN || process.env.VITE_AIRTABLE_TOKEN,
+    airtableBaseId: process.env.AIRTABLE_BASE_ID || process.env.VITE_AIRTABLE_BASE_ID,
+    airtableTableName: process.env.AIRTABLE_TABLE_NAME || process.env.VITE_AIRTABLE_TABLE_NAME,
+    airtableViewId: process.env.AIRTABLE_VIEW_ID || process.env.VITE_AIRTABLE_VIEW_ID,
+    airtableLocationsTableName: process.env.AIRTABLE_LOCATIONS_TABLE_NAME || process.env.VITE_AIRTABLE_LOCATIONS_TABLE_NAME,
     public: {}
   },
 
