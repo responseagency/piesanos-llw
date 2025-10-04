@@ -45,6 +45,7 @@ const selectedLocation = computed(() => {
 })
 
 const selectedLocationId = computed(() => selectedLocation.value?.id || null)
+const selectedLocationNumber = computed(() => selectedLocation.value?.fields?.['Location Number'] || null)
 
 // Filter beverages by location
 // Note: Airtable stores "Unavailable Locations" - filter out items that have this location in that field
@@ -75,7 +76,7 @@ const organizedBeverages = computed(() => {
   if (!filteredByCategory?.value) {
     return []
   }
-  const organized = organizeByHierarchy(filteredByCategory.value)
+  const organized = organizeByHierarchy(filteredByCategory.value, selectedLocationNumber.value)
   return sortHierarchyByPrice(organized)
 })
 
