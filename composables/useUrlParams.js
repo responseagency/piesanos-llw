@@ -46,6 +46,7 @@ export function useUrlParams() {
     getParam,
     hasParam,
     isDebugMode,
+    showDebug: isDebugMode, // Alias for compatibility
     updateParams
   }
 }

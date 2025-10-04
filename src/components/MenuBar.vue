@@ -73,22 +73,10 @@
   </div>
 </template>
 
-<script>
-import { ref } from 'vue'
+<script setup>
+const isMenuOpen = ref(false)
 
-export default {
-  name: 'MenuBar',
-  setup() {
-    const isMenuOpen = ref(false)
-
-    const toggleMenu = () => {
-      isMenuOpen.value = !isMenuOpen.value
-    }
-
-    return {
-      isMenuOpen,
-      toggleMenu
-    }
-  }
+const toggleMenu = () => {
+  isMenuOpen.value = !isMenuOpen.value
 }
 </script>

@@ -94,13 +94,10 @@ export default {
   },
   computed: {
     beverageCategory() {
-      if (!this.categoryMapping) return null
-
-      const categories = this.beverage.fields['Beverage Categories (from Beverage Item)']
+      // Use the resolved category name from the API
+      const categories = this.beverage.fields['Beverage Categories Resolved']
       if (!categories || categories.length === 0) return null
-
-      const categoryId = categories[0]
-      return this.categoryMapping.getCategoryName(categoryId)
+      return Array.isArray(categories) ? categories[0] : categories
     },
     beverageType() {
       const type = this.beverage.fields['Beverage Type Resolved']

@@ -28,3 +28,7 @@ src/data/*.json
 
 # Local Netlify folder
 .netlify
+
+# Nuxt build artifacts
+.nuxt
+.output

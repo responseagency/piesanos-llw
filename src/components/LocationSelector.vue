@@ -119,20 +119,35 @@ export default {
     // Try to get location filter functions from injection (when used with composable)
     const locationFilter = inject('locationFilter', null)
 
+    // Inject locations and selectedLocationId from parent
+    const injectedLocations = inject('locations', null)
+    const injectedSelectedLocationId = inject('selectedLocationId', null)
+
     // Get debug mode state
     const { isDebugMode } = useUrlParams()
 
+    // Use injected or prop values
+    const locations = computed(() => {
+      if (injectedLocations?.value) return injectedLocations.value
+      return props.locations
+    })
+
+    const selectedLocationId = computed(() => {
+      if (injectedSelectedLocationId?.value !== undefined) return injectedSelectedLocationId.value
+      return props.selectedLocationId
+    })
+
     // Computed properties
     const activeLocations = computed(() => {
-      return props.locations.filter(location => locationService.isLocationActive(location))
+      return locations.value.filter(location => locationService.isLocationActive(location))
     })
 
     const selectedLocationName = computed(() => {
-      if (!props.selectedLocationId || !props.locations.length) {
+      if (!selectedLocationId.value || !locations.value.length) {
         return isDebugMode.value ? 'All Locations (all)' : 'All Locations'
       }
 
-      const location = props.locations.find(loc => loc.id === props.selectedLocationId)
+      const location = locations.value.find(loc => loc.id === selectedLocationId.value)
       if (location) {
         const baseName = locationService.formatLocationName(location)
         if (isDebugMode.value) {
@@ -179,6 +194,7 @@ export default {
 
     return {
       activeLocations,
+      selectedLocationId,
       selectedLocationName,
       sizeClass,
       formatLocationName,

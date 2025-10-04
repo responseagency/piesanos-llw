@@ -94,7 +94,6 @@
 </template>
 
 <script setup lang="ts">
-import { computed } from 'vue'
 import type { BaseItem, MenuConfig, Category } from '@/core/types'
 
 interface Props {

@@ -1,9 +1,19 @@
+// https://nuxt.com/docs/api/configuration/nuxt-config
 import tailwindcss from '@tailwindcss/vite'
 
-// https://nuxt.com/docs/api/configuration/nuxt-config
 export default defineNuxtConfig({
   devtools: { enabled: true },
   ssr: true,
+
+  components: {
+    dirs: [
+      {
+        path: '~/src/components',
+        pathPrefix: false,
+        global: true
+      }
+    ]
+  },
 
   css: ['~/src/style.css'],
 

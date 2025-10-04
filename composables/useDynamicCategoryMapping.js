@@ -260,11 +260,105 @@ export function useDynamicCategoryMapping(beverages) {
     }
   })
 
+  // Get all available beverage types
+  const availableTypes = computed(() => {
+    if (!beverages.value || !Array.isArray(beverages.value)) {
+      return []
+    }
+
+    const typesSet = new Set()
+    beverages.value.forEach(beverage => {
+      const type = beverage.fields?.['Beverage Type']
+      if (type) {
+        if (Array.isArray(type)) {
+          type.forEach(t => typesSet.add(t))
+        } else {
+          typesSet.add(type)
+        }
+      }
+    })
+
+    return Array.from(typesSet).sort()
+  })
+
+  // Get available categories for selected type
+  const selectedType = ref(null)
+  const selectedCategory = ref(null)
+
+  const availableCategories = computed(() => {
+    if (!beverages.value || !Array.isArray(beverages.value)) {
+      return []
+    }
+
+    const categoriesSet = new Set()
+    const filteredBeverages = selectedType.value
+      ? beverages.value.filter(beverage => {
+          const type = beverage.fields?.['Beverage Type']
+          if (Array.isArray(type)) {
+            return type.includes(selectedType.value)
+          }
+          return type === selectedType.value
+        })
+      : beverages.value
+
+    filteredBeverages.forEach(beverage => {
+      const categories = beverage.fields?.['Beverage Categories (from Beverage Item)'] || []
+      categories.forEach(categoryId => {
+        if (categoryId) {
+          categoriesSet.add(categoryId)
+        }
+      })
+    })
+
+    return Array.from(categoriesSet)
+      .map(id => ({
+        id,
+        name: getCategoryName(id)
+      }))
+      .sort((a, b) => a.name.localeCompare(b.name))
+  })
+
+  // Filter beverages by selected type and category
+  const filteredByCategory = computed(() => {
+    if (!beverages.value || !Array.isArray(beverages.value)) {
+      return []
+    }
+
+    let filtered = beverages.value
+
+    // Filter by type if selected
+    if (selectedType.value) {
+      filtered = filtered.filter(beverage => {
+        const type = beverage.fields?.['Beverage Type']
+        if (Array.isArray(type)) {
+          return type.includes(selectedType.value)
+        }
+        return type === selectedType.value
+      })
+    }
+
+    // Filter by category if selected
+    if (selectedCategory.value) {
+      filtered = filtered.filter(beverage => {
+        const categories = beverage.fields?.['Beverage Categories (from Beverage Item)'] || []
+        return categories.includes(selectedCategory.value)
+      })
+    }
+
+    return filtered
+  })
+
   return {
     getCategoryName,
     dynamicCategoryMapping,
     discoveredCategories,
     mappingStats,
-    extractCategoryFromName
+    extractCategoryFromName,
+    // Filter/selection functionality
+    availableTypes,
+    availableCategories,
+    selectedType,
+    selectedCategory,
+    filteredByCategory
   }
 }

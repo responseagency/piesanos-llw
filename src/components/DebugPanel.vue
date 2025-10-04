@@ -44,7 +44,7 @@
           <label class="block text-gray-700 font-semibold mb-1">Location</label>
           <select
             :value="selectedLocationId"
-            @change="$emit('location-changed', $event.target.value)"
+            @change="handleLocationChange"
             :disabled="locationLoading"
             class="w-full border border-gray-300 rounded px-2 py-1 text-xs bg-white disabled:bg-gray-100"
           >
@@ -170,6 +170,7 @@
 
 <script>
 import { ref } from 'vue'
+import locationService from '../services/location.js'
 
 export default {
   name: 'DebugPanel',
@@ -225,11 +226,29 @@ export default {
     }
   },
   emits: ['location-changed', 'update:showOnlyAvailable', 'update:sortBy', 'refresh'],
-  setup() {
+  setup(props) {
     const isExpanded = ref(false)
+    const router = useRouter()
+
+    const handleLocationChange = (event) => {
+      const locationId = event.target.value
+
+      if (locationId === 'all') {
+        // Navigate to home page
+        router.push('/')
+      } else {
+        // Find the location and generate its slug
+        const location = props.locations.find(loc => loc.id === locationId)
+        if (location) {
+          const slug = locationService.getLocationSlug(location)
+          router.push(`/${slug}`)
+        }
+      }
+    }
 
     return {
-      isExpanded
+      isExpanded,
+      handleLocationChange
     }
   }
 }

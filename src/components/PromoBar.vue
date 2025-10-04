@@ -29,79 +29,64 @@
   </div>
 </template>
 
-<script>
-import { ref, computed, watch, inject } from 'vue'
+<script setup>
+// Inject location-related data from parent
+const locations = inject('locations', ref([]))
+const selectedLocationId = inject('selectedLocationId', ref(null))
 
-export default {
-  name: 'PromoBar',
-  setup() {
-    // Inject location filter from parent
-    const locationFilter = inject('locationFilter', null)
+// State for managing the promo bar visibility
+const closedForLocations = ref(new Set())
 
-    // State for managing the promo bar visibility
-    const closedForLocations = ref(new Set())
+// Get the current selected location
+const selectedLocation = computed(() => {
+  if (!selectedLocationId.value || !locations.value.length) return null
+  return locations.value.find(loc => loc.id === selectedLocationId.value)
+})
 
-    // Get the current selected location
-    const selectedLocation = computed(() => {
-      return locationFilter?.selectedLocation?.value || null
-    })
+// Get promo content for current location
+const promoContent = computed(() => {
+  if (!selectedLocation.value) return null
+  // Only show promo if there's actual Promo Text
+  return selectedLocation.value.fields?.['Promo Text'] || null
+})
 
-    // Get promo content for current location
-    const promoContent = computed(() => {
-      if (!selectedLocation.value) return null
+// Get CTA text for current location
+const ctaText = computed(() => {
+  if (!selectedLocation.value) return null
+  return selectedLocation.value.fields?.['Promo CTA'] || null
+})
 
-      // Only show promo if there's actual Promo Text
-      return selectedLocation.value.fields?.['Promo Text'] || null
-    })
+// Get CTA link for current location
+const ctaLink = computed(() => {
+  if (!selectedLocation.value) return null
+  return selectedLocation.value.fields?.['Promo URL'] || null
+})
 
-    // Get CTA text for current location
-    const ctaText = computed(() => {
-      if (!selectedLocation.value) return null
-      return selectedLocation.value.fields?.['Promo CTA'] || null
-    })
+// Determine if bar should be shown
+const showBar = computed(() => {
+  if (!selectedLocation.value || !promoContent.value) return false
+  // Don't show if user has closed it for this location
+  return !closedForLocations.value.has(selectedLocation.value.id)
+})
 
-    // Get CTA link for current location
-    const ctaLink = computed(() => {
-      if (!selectedLocation.value) return null
-      return selectedLocation.value.fields?.['Promo URL'] || null
-    })
-
-    // Determine if bar should be shown
-    const showBar = computed(() => {
-      if (!selectedLocation.value || !promoContent.value) return false
-
-      // Don't show if user has closed it for this location
-      return !closedForLocations.value.has(selectedLocation.value.id)
-    })
-
-    // Close the bar for current location
-    const closeBar = () => {
-      if (selectedLocation.value) {
-        closedForLocations.value.add(selectedLocation.value.id)
-      }
-    }
-
-    // Watch for location changes to potentially re-show the bar
-    watch(
-      () => selectedLocation.value?.id,
-      (newLocationId, oldLocationId) => {
-        // When location changes, the bar will automatically show again
-        // if it hasn't been closed for the new location
-        if (newLocationId !== oldLocationId) {
-          // Bar visibility is computed, so it will update automatically
-        }
-      }
-    )
-
-    return {
-      showBar,
-      promoContent,
-      ctaText,
-      ctaLink,
-      closeBar
-    }
+// Close the bar for current location
+const closeBar = () => {
+  if (selectedLocation.value) {
+    closedForLocations.value.add(selectedLocation.value.id)
   }
 }
+
+// Watch for location changes to potentially re-show the bar
+watch(
+  () => selectedLocation.value?.id,
+  (newLocationId, oldLocationId) => {
+    // When location changes, the bar will automatically show again
+    // if it hasn't been closed for the new location
+    if (newLocationId !== oldLocationId) {
+      // Bar visibility is computed, so it will update automatically
+    }
+  }
+)
 </script>
 
 <style scoped>

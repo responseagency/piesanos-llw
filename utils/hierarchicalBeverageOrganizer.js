@@ -36,6 +36,12 @@ function inferBeverageTypeForGrouping(beverage) {
 
 // Organize beverages into hierarchical structure
 export function organizeByHierarchy(beverages, locationNumber = null) {
+  // Handle null/undefined/non-array input
+  if (!beverages || !Array.isArray(beverages)) {
+    console.warn('⚠️ organizeByHierarchy received invalid input:', beverages)
+    return {}
+  }
+
   const sections = getSections()
   const organized = {}
 
@@ -362,6 +368,12 @@ export function filterHierarchy(hierarchicalBeverages, options = {}) {
 
 // Sort beverages within hierarchy by price
 export function sortHierarchyByPrice(hierarchicalBeverages, ascending = true) {
+  // Handle null/undefined/non-object input
+  if (!hierarchicalBeverages || typeof hierarchicalBeverages !== 'object') {
+    console.warn('⚠️ sortHierarchyByPrice received invalid input:', hierarchicalBeverages)
+    return {}
+  }
+
   const sorted = {}
 
   Object.keys(hierarchicalBeverages).forEach(sectionId => {
@@ -393,6 +405,12 @@ export function sortHierarchyByPrice(hierarchicalBeverages, ascending = true) {
 
 // Get stats for hierarchical data
 export function getHierarchyStats(hierarchicalBeverages) {
+  // Handle null/undefined/non-object input
+  if (!hierarchicalBeverages || typeof hierarchicalBeverages !== 'object') {
+    console.warn('⚠️ getHierarchyStats received invalid input:', hierarchicalBeverages)
+    return { totalCount: 0, typeBreakdown: {} }
+  }
+
   const stats = {}
 
   Object.keys(hierarchicalBeverages).forEach(sectionId => {
