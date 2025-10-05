@@ -2,6 +2,8 @@
   <div>
     <MenuBar />
     <DrinkSubmenu />
+    <div class="h-20"></div>
+
     <DrinkSections />
     <DebugPanel
       v-if="showDebug"
