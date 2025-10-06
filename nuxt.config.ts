@@ -5,6 +5,19 @@ export default defineNuxtConfig({
   devtools: { enabled: true },
   ssr: true,
 
+  app: {
+    head: {
+      title: 'Piesanos Beverage Menu',
+      meta: [
+        { charset: 'utf-8' },
+        { name: 'viewport', content: 'width=device-width, initial-scale=1' }
+      ],
+      link: [
+        { rel: 'icon', type: 'image/svg+xml', href: '/favicon.svg' }
+      ]
+    }
+  },
+
   components: {
     dirs: [
       {
@@ -31,22 +44,10 @@ export default defineNuxtConfig({
     public: {}
   },
 
-  app: {
-    head: {
-      title: 'Piesanos Beverage Menu',
-      meta: [
-        { charset: 'utf-8' },
-        { name: 'viewport', content: 'width=device-width, initial-scale=1' }
-      ],
-      link: [
-        { rel: 'icon', type: 'image/svg+xml', href: '/favicon.svg' }
-      ]
-    }
-  },
-
+  // Cache aggressively since data only changes 1-2x per month
   routeRules: {
-    '/**': { swr: 3600, cache: { maxAge: 3600 } },
-    '/api/**': { swr: 600, cache: { maxAge: 600 } }
+    '/**': { swr: 86400, cache: { maxAge: 86400 } }, // 24 hour cache
+    '/api/**': { swr: 3600, cache: { maxAge: 3600 } } // 1 hour API cache
   },
 
   nitro: {

@@ -4,21 +4,12 @@
     <DrinkSubmenu />
     <div class="h-20"></div>
     <DrinkSections />
-    <DebugPanel
-      v-if="showDebug"
-      :selectedLocationId="selectedLocationId || 'all'"
-      :locations="locations"
-      :beverageStats="stats?.typeBreakdown || {}"
-      :showOnlyAvailable="false"
-      :sortBy="'name'"
-    />
   </div>
 </template>
 
 <script setup>
 import {
   organizeByHierarchy,
-  filterHierarchy,
   sortHierarchyByPrice,
   getHierarchyStats
 } from '~/utils/hierarchicalBeverageOrganizer'
@@ -35,7 +26,6 @@ const { data: locationData } = await useFetch('/api/locations')
 // Extract data from response
 const allBeverages = computed(() => beverageData.value?.data || [])
 const locations = computed(() => locationData.value?.data || [])
-const lookupMappings = computed(() => beverageData.value?.mappings || {})
 
 // Find the selected location
 const selectedLocation = computed(() => {
@@ -49,7 +39,6 @@ const selectedLocationId = computed(() => selectedLocation.value?.id || null)
 const selectedLocationNumber = computed(() => selectedLocation.value?.fields?.['Location Number'] || null)
 
 // Filter beverages by location
-// Note: Airtable stores "Unavailable Locations" - filter out items that have this location in that field
 const beverages = computed(() => {
   if (!selectedLocationId.value) return allBeverages.value
 
@@ -59,33 +48,14 @@ const beverages = computed(() => {
   })
 })
 
-// URL params for debug mode
-const { showDebug } = useUrlParams()
-
-// Beverages are already enriched by the server with resolved names
-// Dynamic category mapping
-const {
-  availableTypes,
-  availableCategories,
-  selectedType,
-  selectedCategory,
-  filteredByCategory
-} = useDynamicCategoryMapping(beverages)
-
-// Organize beverages hierarchically
+// Organize beverages hierarchically (no filtering needed - show all types)
 const organizedBeverages = computed(() => {
-  if (!filteredByCategory?.value) {
-    return []
-  }
-  const organized = organizeByHierarchy(filteredByCategory.value, selectedLocationNumber.value)
+  const organized = organizeByHierarchy(beverages.value, selectedLocationNumber.value)
   return sortHierarchyByPrice(organized)
 })
 
 // Get stats
 const stats = computed(() => {
-  if (!organizedBeverages?.value) {
-    return { totalCount: 0, typeBreakdown: {} }
-  }
   return getHierarchyStats(organizedBeverages.value)
 })
 
@@ -94,8 +64,4 @@ provide('beverages', organizedBeverages)
 provide('stats', stats)
 provide('locations', locations)
 provide('selectedLocationId', selectedLocationId)
-provide('selectedType', selectedType)
-provide('selectedCategory', selectedCategory)
-provide('availableTypes', availableTypes)
-provide('availableCategories', availableCategories)
 </script>
