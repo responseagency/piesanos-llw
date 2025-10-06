@@ -54,7 +54,7 @@
       </div>
 
       <!-- Order Now Button (Desktop Only) -->
-      <a href="https://www.piesanostogo.com/" class="hidden md:block px-4 py-2 bg-gold-400 rounded-xs font-medium text-sm uppercase tracking-wide hover:bg-gold-100 transition">Order Now</a>
+      <a  target="_blank" href="https://piesanostogo.hungerrush.com/Order/OrderType" class="hidden md:block px-4 py-2 bg-gold-400 rounded-xs font-medium text-sm uppercase tracking-wide hover:bg-gold-100 transition">Order Now</a>
     </div>
 
     <!-- Mobile Navigation Menu -->

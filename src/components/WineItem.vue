@@ -140,6 +140,13 @@ export default {
   },
   methods: {
     getBeverageCategory(wine) {
+      // Use pre-resolved category names from the server
+      const resolvedCategories = wine.fields['Beverage Categories Resolved']
+      if (resolvedCategories && resolvedCategories.length) {
+        return resolvedCategories[0]
+      }
+
+      // Fallback to looking up by ID if resolved field not available
       const categories = wine.fields['Beverage Categories (from Beverage Item)']
       if (!categories || !categories.length) return null
 
