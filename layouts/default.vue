@@ -443,5 +443,7 @@
 
     <!-- Main content slot -->
     <slot />
+
+    <div class="h-72"></div>
   </div>
 </template>
