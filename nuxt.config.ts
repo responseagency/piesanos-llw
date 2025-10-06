@@ -31,7 +31,14 @@ export default defineNuxtConfig({
   css: ['~/src/style.css'],
 
   vite: {
-    plugins: [tailwindcss()]
+    plugins: [tailwindcss()],
+    build: {
+      cssCodeSplit: false, // Bundle all CSS into one file
+    }
+  },
+
+  experimental: {
+    inlineStyles: true, // Inline CSS into HTML
   },
 
   runtimeConfig: {
