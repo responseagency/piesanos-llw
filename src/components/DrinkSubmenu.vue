@@ -18,10 +18,11 @@
           :data-nav-item="item.id"
           @click="scrollToItem(item.id, item.type)"
           :class="[
-            'px-6 py-6 text-sm font-medium transition-colors duration-200 relative whitespace-nowrap uppercase flex-shrink-0',
+            'px-6 py-6 text-sm font-medium transition-all duration-300 relative whitespace-nowrap uppercase flex-shrink-0',
             activeItem === item.id
               ? 'text-[#3E1501]'
-              : 'text-gray-600 hover:text-[#3E1501]'
+              : 'text-gray-600 hover:text-[#3E1501]',
+            visibleItems.includes(item.id) ? 'opacity-100' : 'opacity-0 hidden'
           ]"
         >
           {{ item.title }}
@@ -54,6 +55,7 @@ export default {
     const promoBarHeight = ref(0)
     const nav = ref(null)
     const isUserScrollingNav = ref(false)
+    const visibleItems = ref([])
 
     // Calculate promo bar height
     const updatePromoBarHeight = () => {
@@ -79,6 +81,7 @@ export default {
       // Get menu item refs after next tick
       nextTick(() => {
         menuItems.value = document.querySelectorAll('[data-section-id], [data-group-id]')
+        checkVisibleItems()
         setupScrollListener()
       })
 
@@ -180,6 +183,31 @@ export default {
       }
     }
 
+    // Check which items exist in the page
+    const checkVisibleItems = () => {
+      const itemsToShow = []
+
+      for (const item of allNavigationItems.value) {
+        let element
+        if (item.type === 'section') {
+          element = document.querySelector(`[data-section-id="${item.id}"]`)
+        } else {
+          element = document.querySelector(`[data-group-id="${item.id}"]`)
+        }
+
+        if (element) {
+          itemsToShow.push(item.id)
+        }
+      }
+
+      visibleItems.value = itemsToShow
+
+      // Update active item to first visible item if current active isn't visible
+      if (!itemsToShow.includes(activeItem.value) && itemsToShow.length > 0) {
+        activeItem.value = itemsToShow[0]
+      }
+    }
+
     // Set up scroll listener to update active item
     const setupScrollListener = () => {
       const handleScroll = () => {
@@ -231,7 +259,8 @@ export default {
       scrollToItem,
       promoBarHeight,
       nav,
-      handleNavScroll
+      handleNavScroll,
+      visibleItems
     }
   }
 }

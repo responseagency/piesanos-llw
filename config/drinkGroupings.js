@@ -18,6 +18,7 @@ export const DRINK_GROUPINGS = {
         title: 'Sampler',
         order: 1,
         isCustomGroup: true,
+        include: [3],  // Only show at locations 1 and 2 (Long Beach and Seal Beach)
         customItems: [
           {
             title: 'You Pick',
