@@ -59,8 +59,8 @@
 
     <!-- Mobile Navigation Menu -->
     <nav
-      v-if="isMenuOpen"
-      class="md:hidden bg-red-950 border-t border-gold-900/50"
+      id="mobile-menu"
+      class="hidden md:hidden bg-red-950 border-t border-gold-900/50"
     >
       <ul class="flex flex-col text-gold-50 font-medium text-sm uppercase tracking-wide text-center">
           <li><a href="https://www.piesanostogo.com/menu/" class="border-b border-gold-900/50 block px-4 py-6 hover:bg-red-900 transition-colors">Menu</a></li>
@@ -73,10 +73,3 @@
   </div>
 </template>
 
-<script setup>
-const isMenuOpen = ref(false)
-
-const toggleMenu = () => {
-  isMenuOpen.value = !isMenuOpen.value
-}
-</script>

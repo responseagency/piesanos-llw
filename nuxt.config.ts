@@ -5,7 +5,11 @@ export default defineNuxtConfig({
   devtools: { enabled: true },
   ssr: true,
 
+  // Disable client-side hydration - pure SSR with minimal JS
   app: {
+    rootAttrs: {
+      id: 'app'
+    },
     head: {
       title: 'Piesanos Beverage Menu',
       meta: [
@@ -39,6 +43,7 @@ export default defineNuxtConfig({
 
   experimental: {
     inlineStyles: true, // Inline CSS into HTML
+    noScripts: true, // Disable Vue/Nuxt client scripts
   },
 
   runtimeConfig: {
