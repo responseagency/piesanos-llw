@@ -11,6 +11,7 @@ export const DRINK_GROUPINGS = {
   // Section 1: ON TAP
   'on-tap': {
     title: 'ON TAP',
+    
     // subtitle: '40+ Beers on Tap',
     order: 1,
     groups: {
