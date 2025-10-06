@@ -1,7 +1,9 @@
 // https://nuxt.com/docs/api/configuration/nuxt-config
 import tailwindcss from '@tailwindcss/vite'
+import inlineAllCss from './inline-css-plugin'
 
 export default defineNuxtConfig({
+  modules: [inlineAllCss],
   devtools: { enabled: true },
   ssr: true,
 
