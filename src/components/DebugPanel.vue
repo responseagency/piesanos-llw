@@ -54,7 +54,7 @@
               :key="location.id"
               :value="location.id"
             >
-              {{ location.fields['Location Name'] || location.fields.Name || 'Unnamed Location' }}
+              {{ getLocationSlug(location) }}
             </option>
           </select>
           <div v-if="locationError" class="text-red-600 mt-1">{{ locationError }}</div>
@@ -248,7 +248,8 @@ export default {
 
     return {
       isExpanded,
-      handleLocationChange
+      handleLocationChange,
+      getLocationSlug
     }
   }
 }
