@@ -36,7 +36,8 @@ export default defineNuxtConfig({
       title: 'Piesanos Beverage Menu',
       meta: [
         { charset: 'utf-8' },
-        { name: 'viewport', content: 'width=device-width, initial-scale=1' }
+        { name: 'viewport', content: 'width=device-width, initial-scale=1' },
+        { name: 'description', content: 'Explore Piesanos\' extensive beverage menu featuring craft beers on tap, premium wines, ciders, and specialty drinks. Find your perfect drink at any of our locations.' }
       ],
       link: [
         { rel: 'icon', type: 'image/svg+xml', href: '/favicon.svg' }
