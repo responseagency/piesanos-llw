@@ -16,11 +16,11 @@ export default defineEventHandler(async (event) => {
   const query = getQuery(event)
 
   // Verify secret token for security
-  const secret = config.rebuildSecret || process.env.REBUILD_SECRET
+  const secret = config.rebuildSecret
   if (!secret) {
     throw createError({
       statusCode: 500,
-      statusMessage: 'Server misconfiguration: REBUILD_SECRET not set. GET requests require authentication.'
+      statusMessage: 'Server misconfiguration: Authentication not configured. GET requests require authentication.'
     })
   }
 
@@ -33,7 +33,7 @@ export default defineEventHandler(async (event) => {
   }
 
   // Get the Netlify Build Hook URL from environment
-  const buildHookUrl = config.netlifyBuildHookUrl || process.env.NETLIFY_BUILD_HOOK_URL
+  const buildHookUrl = config.netlifyBuildHookUrl
 
   if (!buildHookUrl) {
     throw createError({

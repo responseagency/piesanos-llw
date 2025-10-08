@@ -17,7 +17,7 @@ export default defineEventHandler(async (event) => {
   const config = useRuntimeConfig()
 
   // Optional: Verify secret token for security
-  const secret = config.rebuildSecret || process.env.REBUILD_SECRET
+  const secret = config.rebuildSecret
   if (secret) {
     const providedSecret = getHeader(event, 'x-rebuild-secret')
     if (providedSecret !== secret) {
@@ -29,7 +29,7 @@ export default defineEventHandler(async (event) => {
   }
 
   // Get the Netlify Build Hook URL from environment
-  const buildHookUrl = config.netlifyBuildHookUrl || process.env.NETLIFY_BUILD_HOOK_URL
+  const buildHookUrl = config.netlifyBuildHookUrl
 
   if (!buildHookUrl) {
     throw createError({
