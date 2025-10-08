@@ -7,8 +7,8 @@ const __filename = fileURLToPath(import.meta.url)
 const __dirname = path.dirname(__filename)
 
 async function fetchFromAirtable(tableName, viewId = null) {
-  const token = process.env.VITE_AIRTABLE_TOKEN
-  const baseId = process.env.VITE_AIRTABLE_BASE_ID
+  const token = process.env.AIRTABLE_TOKEN || process.env.VITE_AIRTABLE_TOKEN
+  const baseId = process.env.AIRTABLE_BASE_ID || process.env.VITE_AIRTABLE_BASE_ID
 
   if (!token || !baseId || !tableName) {
     throw new Error('Missing Airtable configuration. Check your environment variables.')
@@ -46,14 +46,14 @@ async function prebuild() {
 
   try {
     // Fetch beverage data
-    const tableName = process.env.VITE_AIRTABLE_TABLE_NAME
-    const viewId = process.env.VITE_AIRTABLE_VIEW_ID
+    const tableName = process.env.AIRTABLE_TABLE_NAME || process.env.VITE_AIRTABLE_TABLE_NAME
+    const viewId = process.env.AIRTABLE_VIEW_ID || process.env.VITE_AIRTABLE_VIEW_ID
 
     console.log(`  📦 Fetching beverages from table: ${tableName}${viewId ? ` (view: ${viewId})` : ''}`)
     const beverageData = await fetchFromAirtable(tableName, viewId)
 
     // Fetch location data
-    const locationsTableName = process.env.VITE_AIRTABLE_LOCATIONS_TABLE_NAME
+    const locationsTableName = process.env.AIRTABLE_LOCATIONS_TABLE_NAME || process.env.VITE_AIRTABLE_LOCATIONS_TABLE_NAME
     console.log(`  📍 Fetching locations from table: ${locationsTableName}`)
     const locationData = await fetchFromAirtable(locationsTableName)
 

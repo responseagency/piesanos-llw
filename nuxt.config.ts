@@ -28,6 +28,8 @@ export default defineNuxtConfig({
     airtableTableName: process.env.AIRTABLE_TABLE_NAME || process.env.VITE_AIRTABLE_TABLE_NAME,
     airtableViewId: process.env.AIRTABLE_VIEW_ID || process.env.VITE_AIRTABLE_VIEW_ID,
     airtableLocationsTableName: process.env.AIRTABLE_LOCATIONS_TABLE_NAME || process.env.VITE_AIRTABLE_LOCATIONS_TABLE_NAME,
+    netlifyBuildHookUrl: process.env.NETLIFY_BUILD_HOOK_URL,
+    rebuildSecret: process.env.REBUILD_SECRET,
     public: {}
   },
 
