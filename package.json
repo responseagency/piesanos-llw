@@ -5,6 +5,7 @@
   "type": "module",
   "scripts": {
     "dev": "nuxt dev",
+    "prebuild": "node scripts/prebuild.js",
     "build": "nuxt build",
     "preview": "nuxt preview",
     "generate": "nuxt generate",
