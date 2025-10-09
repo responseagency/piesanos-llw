@@ -3,7 +3,7 @@
 
 [build.environment]
   NODE_VERSION = "20"
-  SECRETS_SCAN_OMIT_KEYS = "REBUILD_SECRET"
+  SECRETS_SCAN_OMIT_KEYS = "REBUILD_SECRET,NETLIFY_BUILD_HOOK_URL"
 
 # Context-specific build for branch deploys
 [context.branch-deploy]
