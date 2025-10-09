@@ -43,6 +43,13 @@ async function fetchFromAirtable(tableName, viewId = null) {
 
 async function prebuild() {
   console.log('🔄 Pre-build: Fetching fresh data from Airtable...')
+  console.log('  🔍 Checking environment variables:')
+  console.log(`    AIRTABLE_TOKEN: ${process.env.AIRTABLE_TOKEN ? 'SET' : 'NOT SET'}`)
+  console.log(`    VITE_AIRTABLE_TOKEN: ${process.env.VITE_AIRTABLE_TOKEN ? 'SET' : 'NOT SET'}`)
+  console.log(`    AIRTABLE_BASE_ID: ${process.env.AIRTABLE_BASE_ID ? 'SET' : 'NOT SET'}`)
+  console.log(`    AIRTABLE_TABLE_NAME: ${process.env.AIRTABLE_TABLE_NAME ? 'SET' : 'NOT SET'}`)
+  console.log(`    AIRTABLE_VIEW_ID: ${process.env.AIRTABLE_VIEW_ID ? 'SET' : 'NOT SET'}`)
+  console.log(`    AIRTABLE_LOCATIONS_TABLE_NAME: ${process.env.AIRTABLE_LOCATIONS_TABLE_NAME ? 'SET' : 'NOT SET'}`)
 
   try {
     // Fetch beverage data

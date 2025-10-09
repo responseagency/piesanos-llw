@@ -1,9 +1,13 @@
 [build]
-  command = "npm run build"
+  command = "npm run prebuild && npm run build"
 
 [build.environment]
   NODE_VERSION = "20"
   SECRETS_SCAN_OMIT_KEYS = "REBUILD_SECRET"
+
+# Context-specific build for branch deploys
+[context.branch-deploy]
+  command = "npm run prebuild && npm run build"
 
 # Nuxt 4 SSR deployment - no redirects needed as Nuxt handles routing server-side
 
